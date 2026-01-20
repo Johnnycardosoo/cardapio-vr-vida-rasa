@@ -27,9 +27,9 @@ def set_background(png_file):
         '''
         st.markdown(page_bg_img, unsafe_allow_html=True)
 
-set_background('fundo_bar.png')
+set_background('fundo_bar.jpg')
 
-# 2. CSS MOBILE-FIRST (Johnny Cardoso Edition)
+# 2. CSS MOBILE-FIRST
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
@@ -92,7 +92,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Cabeçalho com Logo (MANTIDO)
+# 3. Cabeçalho
 if os.path.exists("vr_logo.png"):
     col_l, col_c, col_r = st.columns([1, 1.5, 1])
     with col_c:
@@ -101,7 +101,8 @@ else:
     st.markdown("<h1 style='text-align: center; color: #FF4B4B; letter-spacing: 5px; margin-bottom:0; font-size: 40px;'>VR</h1>", unsafe_allow_html=True)
 
 st.markdown('<p class="titulo-cardapio">Cardápio</p>', unsafe_allow_html=True)
-st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitulo-bar">Premium Bar</p>', unsafe_allow_html=True)
+st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA, SÃO LUÍS - MA</p>', unsafe_allow_html=True)
 st.markdown('<p class="restricao-idade">🔞 PROIBIDO PARA MENORES DE 18 ANOS</p>', unsafe_allow_html=True)
 
 # 4. Dados
@@ -151,15 +152,17 @@ for categoria, itens in cardapio.items():
             st.markdown(f"<div class='price-badge'>R$ {preco_visivel}</div>", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-# 6. Rodapé
-st.markdown("<br>", unsafe_allow_html=True)
+# 6. Rodapé Restaurado (Johnny Cardoso Style)
 st.divider()
 st.markdown(f"""
-    <div style='text-align: center; padding-bottom: 50px;'>
-        <p style='color: #FF4B4B; font-weight: bold; font-size: 1rem; margin-bottom: 5px;'>www.vrvidarasa.com.br</p>
-        <p style='color: #666; font-size: 0.8rem;'>
-            Copyright © 2026 <b>VR - VIDA RASA</b><br>
-            <span style='font-size: 0.7rem; opacity: 0.8;'>Desenvolvido por <b>Johnny Cardoso</b></span>
+    <div style='text-align: center; padding-bottom: 40px; padding-top: 20px;'>
+        <p style='color: #FF4B4B; font-weight: bold; font-size: 1.1rem; margin-bottom: 10px; letter-spacing: 1px;'>
+            www.vrvidarasa.com.br
+        </p>
+        <p style='color: #888; font-size: 0.85rem; line-height: 1.6;'>
+            <span style='letter-spacing: 1px;'>Copyright © 2026 <b>VR - VIDA RASA</b></span><br>
+            <b>Todos os direitos reservados.</b><br>
+            <span style='font-size: 0.75rem; color: #555;'>Desenvolvido por <b>Johnny Cardoso</b></span>
         </p>
     </div>
     """, unsafe_allow_html=True)
