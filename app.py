@@ -100,7 +100,7 @@ if os.path.exists("vr_logo.png"):
 else:
     st.markdown("<h1 style='text-align: center; color: #FF4B4B; letter-spacing: 5px; margin-bottom:0; font-size: 40px;'>VR</h1>", unsafe_allow_html=True)
 
-st.markdown('<p class="titulo-cardapio">Cardápio</p>', unsafe_allow_html=True)
+st.markdown('<p class="titulo-cardapio">Cardápio Digital</p>', unsafe_allow_html=True)
 st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA, SÃO LUÍS - MA</p>', unsafe_allow_html=True)
 st.markdown('<p class="restricao-idade">🔞 PROIBIDO PARA MENORES DE 18 ANOS</p>', unsafe_allow_html=True)
 
