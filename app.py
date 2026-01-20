@@ -116,35 +116,36 @@ st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA, 
 st.divider()
 
 # 4. Dados do Cardápio
+# 4. Dados do Cardápio (SEM DESCRIÇÕES)
 cardapio = {
     "CERVEJAS": [
-        {"nome": "Stella 600ml", "preco": 15.00, "img": "stella_600ml.png", "desc": "Puro malte bem gelada"},
-        {"nome": "Stella Long Neck", "preco": 12.00, "img": "stella_long.png", "desc": "Refrescante"},
-        {"nome": "Corona Long Neck", "preco": 12.00, "img": "corona_long.png", "desc": "Com fatia de limão"},
-        {"nome": "Skol Beats Lata", "preco": 10.00, "img": "skol_beats_lata.png", "desc": "Sabor vibrante"}
+        {"nome": "Stella Artois", "preco": 15.00, "img": "stella_600ml.png", "ml": "600ml"},
+        {"nome": "Stella Long Neck", "preco": 12.00, "img": "stella_long.png", "ml": "350ml"},
+        {"nome": "Corona", "preco": 12.00, "img": "corona_long.png", "ml": "350ml"},
+        {"nome": "Skol Beats Lata", "preco": 10.00, "img": "skol_beats_lata.png", "ml": "269ml"}
     ],
     "COPÃO": [
-        {"nome": "Copão 500ml", "preco": 25.00, "img": "copao.png", "desc": "Whisky + Energético + Gelo Saborizado"},
-        {"nome": "Copão 700ml", "preco": 30.00, "img": "copao.png", "desc": "Whisky + Energético + Gelo Saborizado"}
+        {"nome": "Copão Whisky", "preco": 25.00, "img": "copao.png", "ml": "500ml"},
+        {"nome": "Copão Whisky", "preco": 30.00, "img": "copao.png", "ml": "700ml"}
     ],
     "COMBOS": [
-        {"nome": "Combo Buchanan's", "preco": 400.00, "img": "combo_buchanans.png", "desc": "1L + 4 Energéticos + Gelo"},
-        {"nome": "Combo Old Parr", "preco": 350.00, "img": "combo_oldparr.png", "desc": "1L + Gelo Saborizado"},
-        {"nome": "Combo Red Label", "preco": 250.00, "img": "combo_red.png", "desc": "O clássico das noites"}
+        {"nome": "Combo Buchanan's", "preco": 400.00, "img": "combo_buchanans.png", "ml": "1L + 4 Energéticos"},
+        {"nome": "Combo Old Parr", "preco": 350.00, "img": "combo_oldparr.png", "ml": "1L + Gelo Saborizado"},
+        {"nome": "Combo Red Label", "preco": 250.00, "img": "combo_red.png", "ml": "1L + Gelo"}
     ],
     "DOSES": [
-        {"nome": "Dose Buchanan's", "preco": 35.00, "img": "dose.png", "desc": "Dose 50ml"},
-        {"nome": "Dose Old Parr", "preco": 30.00, "img": "dose.png", "desc": "Dose 50ml"},
-        {"nome": "Dose Red Label", "preco": 20.00, "img": "dose.png", "desc": "Dose 50ml"}
+        {"nome": "Dose Buchanan's", "preco": 35.00, "img": "dose.png", "ml": "50ml"},
+        {"nome": "Dose Old Parr", "preco": 30.00, "img": "dose.png", "ml": "50ml"},
+        {"nome": "Dose Red Label", "preco": 20.00, "img": "dose.png", "ml": "50ml"}
     ],
     "EXTRAS": [
-        {"nome": "Água 500ml", "preco": 5.00, "img": "agua.png", "desc": "Com ou sem gás"},
-        {"nome": "Gelo Saborizado", "preco": 10.00, "img": "gelo.png", "desc": "Coco, Maracujá ou Melancia"},
-        {"nome": "Gelo em Cubos", "preco": 20.00, "img": "gelo.png", "desc": "Pacote com 5kg"}
+        {"nome": "Água Mineral", "preco": 5.00, "img": "agua.png", "ml": "500ml"},
+        {"nome": "Gelo Saborizado", "preco": 10.00, "img": "gelo.png", "ml": "Coco, Maracujá ou Melancia"},
+        {"nome": "Gelo em Cubos", "preco": 20.00, "img": "gelo.png", "ml": "Pacote 5kg"}
     ]
 }
 
-# 5. Renderização
+# 5. Renderização (ML posicionado abaixo do Nome)
 for categoria, itens in cardapio.items():
     st.markdown(f"<h3 class='category-header'>{categoria}</h3>", unsafe_allow_html=True)
     
@@ -159,9 +160,13 @@ for categoria, itens in cardapio.items():
                 st.markdown("<div style='width:70px; height:70px; background:#1a1a1a; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px;'>📷</div>", unsafe_allow_html=True)
         
         with c2:
+            # 1. Nome do Produto
             st.markdown(f"<div style='margin-top: -5px;'><span class='product-name'>{item['nome']}</span></div>", unsafe_allow_html=True)
-            if item["desc"]:
-                st.caption(item["desc"])
+            
+            # 2. ML (Abaixo do nome, discreto e elegante)
+            st.markdown(f"<div style='color: #888; font-size: 0.85rem; margin-top: 2px; letter-spacing: 0.5px;'>{item['ml']}</div>", unsafe_allow_html=True)
+            
+            # 3. Preço
             st.markdown(f"<div class='price-tag'>R$ {item['preco']:.2f}</div>", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
