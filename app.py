@@ -27,13 +27,12 @@ def set_background(png_file):
         '''
         st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Aplica a imagem de fundo personalizada do bar
 set_background('fundo_bar.png')
 
-# 2. CSS Customizado para Mobile (Ajustes de precisão conforme o print)
+# 2. CSS Customizado para Mobile
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
     
     .block-container { padding-top: 1.5rem !important; padding-bottom: 2rem !important; }
     .stApp { color: white; font-family: 'Inter', sans-serif; }
@@ -41,11 +40,6 @@ st.markdown("""
     .titulo-cardapio {
         color: #FFFFFF; font-size: 18px; font-weight: 200; text-align: center;
         text-transform: uppercase; letter-spacing: 8px; margin-top: 5px;
-    }
-
-    .subtitulo-bar {
-        color: #FF4B4B; text-align: center; font-size: 11px; font-weight: 800;
-        letter-spacing: 5px; text-transform: uppercase; margin-bottom: 5px;
     }
 
     .endereco-bar {
@@ -57,8 +51,7 @@ st.markdown("""
     .restricao-idade {
         color: #FF4B4B; text-align: center; font-size: 8.5px; font-weight: 800;
         letter-spacing: 1px; margin-bottom: 25px;
-        white-space: nowrap; 
-        text-transform: uppercase;
+        white-space: nowrap; text-transform: uppercase;
     }
 
     .product-card {
@@ -82,27 +75,21 @@ st.markdown("""
         min-width: 80px; text-align: center;
     }
     
-    /* AJUSTE SOLICITADO: Títulos das categorias maiores e mais destacados */
     .category-header {
-        color: #FFFFFF; 
-        text-transform: uppercase; 
-        letter-spacing: 5px; /* Aumentado */
-        font-size: 1.1rem;    /* Aumentado de 0.8rem para 1.1rem */
-        font-weight: 900;    /* Máximo destaque */
-        margin: 35px 0 15px 0;
-        display: flex; 
-        align-items: center;
+        color: #FFFFFF; text-transform: uppercase; letter-spacing: 5px; 
+        font-size: 1.1rem; font-weight: 900; margin: 35px 0 15px 0;
+        display: flex; align-items: center;
     }
 
     .category-header::after {
-        content: ""; flex: 1; height: 2px; /* Linha levemente mais grossa */
+        content: ""; flex: 1; height: 2px;
         background: linear-gradient(90deg, #FF4B4B, transparent);
         margin-left: 15px; opacity: 0.5;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Cabeçalho (Logo VR)
+# 3. Cabeçalho
 if os.path.exists("vr_logo.png"):
     col_l, col_c, col_r = st.columns([1, 2, 1])
     with col_c:
@@ -111,14 +98,10 @@ else:
     st.markdown("<h1 style='text-align: center; color: #FF4B4B; letter-spacing: 5px;'>VR</h1>", unsafe_allow_html=True)
 
 st.markdown('<p class="titulo-cardapio">Cardápio Digital</p>', unsafe_allow_html=True)
-
-# Endereço com quebra de linha organizada
 st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA<br>SÃO LUÍS - MA</p>', unsafe_allow_html=True)
-
-# Frase de proibição forçada em linha única
 st.markdown('<div class="restricao-idade">🔞 PROIBIDO PARA MENORES DE 18 ANOS</div>', unsafe_allow_html=True)
 
-# 4. Dados do Cardápio
+# 4. Dados
 cardapio = {
     "CERVEJAS": [
         {"nome": "Stella Artois", "preco": 15.00, "img": "stella_600ml.png", "ml": "600ml"},
@@ -165,11 +148,11 @@ for categoria, itens in cardapio.items():
             st.markdown(f"<div class='price-badge'>{preco_formatado}</div>", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-# 6. Rodapé
+# 6. Rodapé Finalizado
 st.divider()
 st.markdown(f"""
     <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
-        <p style='color: #FF4B4B; font-weight: bold; font-size: 1rem; margin-bottom: 10px;'>www.vrvidarasa.com.br</p>
+        <p style='color: #FF4B4B; font-weight: bold; font-size: 1rem; margin-bottom: 10px;'>www.cardapiovr.com.br</p>
         <p style='color: #888; font-size: 0.85rem; line-height: 1.6;'>
             Copyright © 2026 <b>VR - VIDA RASA</b><br>
             Todos os direitos reservados.<br>
