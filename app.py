@@ -2,8 +2,8 @@ import streamlit as st
 import os
 import base64
 
-# 1. Configuração da página - Otimizada para Mobile
-st.set_page_config(page_title="VR - Cardápio", page_icon="🥃", layout="centered")
+# 1. Configuração da página - Foco total em Mobile
+st.set_page_config(page_title="VR - Cardápio Digital", page_icon="🥃", layout="centered")
 
 def get_base64(bin_file):
     if os.path.exists(bin_file):
@@ -27,42 +27,41 @@ def set_background(png_file):
         '''
         st.markdown(page_bg_img, unsafe_allow_html=True)
 
+# Aplica a imagem de fundo personalizada do bar
 set_background('fundo_bar.png')
 
-# 2. CSS MOBILE-FIRST
+# 2. CSS Customizado para Mobile
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
     
-    .block-container { padding-top: 1.5rem !important; padding-bottom: 2rem !important; }
-    .stApp { color: white; font-family: 'Inter', sans-serif; }
+    .block-container {{ padding-top: 1.5rem !important; padding-bottom: 2rem !important; }}
+    .stApp {{ color: white; font-family: 'Inter', sans-serif; }}
 
-    .titulo-cardapio {
+    .titulo-cardapio {{
         color: #FFFFFF; font-size: 18px; font-weight: 200; text-align: center;
         text-transform: uppercase; letter-spacing: 8px; margin-top: 5px;
-    }
+    }}
 
-    .subtitulo-bar {
+    .subtitulo-bar {{
         color: #FF4B4B; text-align: center; font-size: 11px; font-weight: 800;
         letter-spacing: 5px; text-transform: uppercase; margin-bottom: 5px;
-    }
+    }}
 
-    .endereco-bar {
+    .endereco-bar {{
         color: #BBB; text-align: center; font-size: 10px; 
         text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
         line-height: 1.5;
-    }
+    }}
 
-    /* GARANTE UMA LINHA SÓ PARA A FRASE DE PROIBIÇÃO */
-    .restricao-idade {
+    .restricao-idade {{
         color: #FF4B4B; text-align: center; font-size: 9px; font-weight: 800;
         letter-spacing: 1px; margin-bottom: 25px;
         white-space: nowrap; 
-        overflow: hidden;
         text-transform: uppercase;
-    }
+    }}
 
-    .product-card {
+    .product-card {{
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(15px);
         border-left: 4px solid #FF4B4B;
@@ -71,33 +70,33 @@ st.markdown("""
         margin-bottom: 10px;
         display: flex;
         align-items: center;
-    }
+    }}
     
-    .product-name { font-size: 0.9rem; font-weight: 600; color: #FFFFFF; line-height: 1.2; }
-    .product-ml { color: #888; font-size: 0.7rem; text-transform: uppercase; margin-top: 2px; }
+    .product-name {{ font-size: 0.9rem; font-weight: 600; color: #FFFFFF; line-height: 1.2; }}
+    .product-ml {{ color: #888; font-size: 0.7rem; text-transform: uppercase; margin-top: 2px; }}
 
-    .price-badge {
+    .price-badge {{
         background: rgba(255, 75, 75, 0.15);
         color: #FF4B4B; padding: 6px 8px; border-radius: 10px;
         font-weight: 800; font-size: 0.85rem; border: 1px solid rgba(255, 75, 75, 0.3);
         min-width: 80px; text-align: center;
-    }
+    }}
     
-    .category-header {
+    .category-header {{
         color: #FFFFFF; text-transform: uppercase; letter-spacing: 3px;
         font-size: 0.8rem; font-weight: 800; margin: 30px 0 12px 0;
         display: flex; align-items: center;
-    }
+    }}
 
-    .category-header::after {
+    .category-header::after {{
         content: ""; flex: 1; height: 1px;
         background: linear-gradient(90deg, #FF4B4B, transparent);
         margin-left: 10px; opacity: 0.3;
-    }
+    }}
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Cabeçalho
+# 3. Cabeçalho (Logo VR e Textos)
 if os.path.exists("vr_logo.png"):
     col_l, col_c, col_r = st.columns([1, 2, 1])
     with col_c:
@@ -106,14 +105,10 @@ else:
     st.markdown("<h1 style='text-align: center; color: #FF4B4B; letter-spacing: 5px;'>VR</h1>", unsafe_allow_html=True)
 
 st.markdown('<p class="titulo-cardapio">Cardápio Digital</p>', unsafe_allow_html=True)
-
-# AJUSTE: Endereço com quebra de linha para São Luís
 st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA<br>SÃO LUÍS - MA</p>', unsafe_allow_html=True)
-
-# AJUSTE: Frase em linha única
 st.markdown('<div class="restricao-idade">🔞 PROIBIDO PARA MENORES DE 18 ANOS</div>', unsafe_allow_html=True)
 
-# 4. Dados (Dicionário de Itens)
+# 4. Banco de Dados do Cardápio (Agora com EXTRAS)
 cardapio = {
     "CERVEJAS": [
         {"nome": "Stella Artois", "preco": 15.00, "img": "stella_600ml.png", "ml": "600ml"},
@@ -129,10 +124,20 @@ cardapio = {
         {"nome": "Combo Buchanan's", "preco": 400.00, "img": "combo_buchanans.png", "ml": "1L + 4 Energéticos"},
         {"nome": "Combo Old Parr", "preco": 350.00, "img": "combo_oldparr.png", "ml": "1L + Gelo Sabor"},
         {"nome": "Combo Red Label", "preco": 250.00, "img": "combo_red.png", "ml": "1L + Gelo"}
+    ],
+    "DOSES": [
+        {"nome": "Dose Buchanan's", "preco": 35.00, "img": "dose.png", "ml": "50ml"},
+        {"nome": "Dose Old Parr", "preco": 30.00, "img": "dose.png", "ml": "50ml"},
+        {"nome": "Dose Red Label", "preco": 20.00, "img": "dose.png", "ml": "50ml"}
+    ],
+    "EXTRAS": [
+        {"nome": "Água Mineral", "preco": 5.00, "img": "agua.png", "ml": "500ml"},
+        {"nome": "Gelo Saborizado", "preco": 10.00, "img": "gelo.png", "ml": "Unidade"},
+        {"nome": "Gelo em Cubos", "preco": 20.00, "img": "gelo.png", "ml": "Pacote 5kg"}
     ]
 }
 
-# 5. Renderização
+# 5. Renderização dos itens
 for categoria, itens in cardapio.items():
     st.markdown(f"<div class='category-header'>{categoria}</div>", unsafe_allow_html=True)
     for item in itens:
@@ -146,19 +151,19 @@ for categoria, itens in cardapio.items():
         with c2:
             st.markdown(f"<div><span class='product-name'>{item['nome']}</span><br><span class='product-ml'>{item['ml']}</span></div>", unsafe_allow_html=True)
         with c3:
-            preco_visivel = f"{item['preco']:.2f}".replace('.', ',')
-            st.markdown(f"<div class='price-badge'>R$ {preco_visivel}</div>", unsafe_allow_html=True)
+            preco_formatado = f"{item['preco']:.2f}".replace('.', ',')
+            st.markdown(f"<div class='price-badge'>R$ {preco_formatado}</div>", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-# 6. Rodapé
+# 6. Rodapé Finalizado
 st.divider()
 st.markdown(f"""
-    <div style='text-align: center; padding-bottom: 40px;'>
-        <p style='color: #FF4B4B; font-weight: bold; font-size: 1rem; margin-bottom: 5px;'>www.vrvidarasa.com.br</p>
-        <p style='color: #888; font-size: 0.8rem;'>
+    <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
+        <p style='color: #FF4B4B; font-weight: bold; font-size: 1rem; margin-bottom: 10px;'>www.vrvidarasa.com.br</p>
+        <p style='color: #888; font-size: 0.85rem; line-height: 1.6;'>
             Copyright © 2026 <b>VR - VIDA RASA</b><br>
             Todos os direitos reservados.<br>
-            <span style='font-size: 0.7rem; color: #555;'>Desenvolvido por <b>Johnny Cardoso</b></span>
+            <span style='font-size: 0.75rem; color: #555;'>Desenvolvido por <b>Johnny Cardoso</b></span>
         </p>
     </div>
     """, unsafe_allow_html=True)
