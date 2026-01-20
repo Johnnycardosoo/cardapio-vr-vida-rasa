@@ -2,22 +2,23 @@ import streamlit as st
 import os
 import base64
 
-# 1. Configuração da página
-st.set_page_config(page_title="VR - Vida Rasa", page_icon="🥃", layout="centered")
+# 1. Configuração da página - Foco total em Mobile
+st.set_page_config(page_title="VR - Cardápio Digital", page_icon="🥃", layout="centered")
 
-# --- FUNÇÃO PARA CARREGAR IMAGEM DE FUNDO ---
 def get_base64(bin_file):
-    with open(bin_file, 'rb') as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
+    if os.path.exists(bin_file):
+        with open(bin_file, 'rb') as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    return None
 
 def set_background(png_file):
-    if os.path.exists(png_file):
-        bin_str = get_base64(png_file)
+    bin_str = get_base64(png_file)
+    if bin_str:
         page_bg_img = f'''
         <style>
         .stApp {{
-            background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url("data:image/jpg;base64,{bin_str}");
+            background-image: linear-gradient(rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.88)), url("data:image/jpg;base64,{bin_str}");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -26,81 +27,92 @@ def set_background(png_file):
         '''
         st.markdown(page_bg_img, unsafe_allow_html=True)
 
-set_background('fundo_bar.png')
+# Aplica a imagem de fundo personalizada do bar
+set_background('fundo_bar.jpg')
 
-# 2. Estilização Visual Avançada (CSS)
+# 2. CSS Customizado para Mobile (Ajustes de precisão conforme o print)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
     
+    .block-container { padding-top: 1.5rem !important; padding-bottom: 2rem !important; }
     .stApp { color: white; font-family: 'Inter', sans-serif; }
 
     .titulo-cardapio {
-        color: #FFFFFF; font-size: 24px; font-weight: 200; text-align: center;
-        text-transform: uppercase; letter-spacing: 12px; margin-top: 20px; opacity: 0.9;
+        color: #FFFFFF; font-size: 18px; font-weight: 200; text-align: center;
+        text-transform: uppercase; letter-spacing: 8px; margin-top: 5px;
     }
 
     .subtitulo-bar {
-        color: #FF4B4B; text-align: center; font-size: 12px; font-weight: 800;
-        letter-spacing: 8px; text-transform: uppercase; margin-bottom: 5px;
+        color: #FF4B4B; text-align: center; font-size: 11px; font-weight: 800;
+        letter-spacing: 5px; text-transform: uppercase; margin-bottom: 5px;
     }
 
     .endereco-bar {
-        color: #888; text-align: center; font-size: 10px; font-weight: 400;
-        text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;
+        color: #BBB; text-align: center; font-size: 10px; 
+        text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+        line-height: 1.5;
     }
 
+    /* Correção para o aviso não quebrar linha no celular */
     .restricao-idade {
-        color: #FF4B4B; text-align: center; font-size: 9px; font-weight: 800;
-        text-transform: uppercase; letter-spacing: 3px; margin-bottom: 30px;
-        opacity: 0.8;
+        color: #FF4B4B; text-align: center; font-size: 8.5px; font-weight: 800;
+        letter-spacing: 1px; margin-bottom: 25px;
+        white-space: nowrap; 
+        text-transform: uppercase;
     }
 
     .product-card {
-        background: rgba(255, 255, 255, 0.04);
-        backdrop-filter: blur(12px);
-        border-left: 3px solid #FF4B4B;
-        border-radius: 12px;
-        padding: 18px;
-        margin-bottom: 12px;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(15px);
+        border-left: 4px solid #FF4B4B;
+        border-radius: 15px;
+        padding: 12px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
     }
     
-    .product-name { font-size: 1rem; font-weight: 600; color: #FFFFFF; display: block; }
-    .product-ml { color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+    .product-name { font-size: 0.9rem; font-weight: 600; color: #FFFFFF; line-height: 1.2; }
+    .product-ml { color: #888; font-size: 0.7rem; text-transform: uppercase; margin-top: 2px; }
 
     .price-badge {
-        background: rgba(255, 75, 75, 0.1);
-        color: #FF4B4B; padding: 6px 12px; border-radius: 8px;
-        font-weight: 800; font-size: 0.95rem; border: 1px solid rgba(255, 75, 75, 0.2);
-        text-align: center;
+        background: rgba(255, 75, 75, 0.15);
+        color: #FF4B4B; padding: 6px 8px; border-radius: 10px;
+        font-weight: 800; font-size: 0.85rem; border: 1px solid rgba(255, 75, 75, 0.3);
+        min-width: 80px; text-align: center;
     }
     
     .category-header {
-        color: #FFFFFF; text-transform: uppercase; letter-spacing: 5px;
-        font-size: 0.9rem; font-weight: 800; margin: 45px 0 20px 0;
+        color: #FFFFFF; text-transform: uppercase; letter-spacing: 3px;
+        font-size: 0.8rem; font-weight: 800; margin: 30px 0 12px 0;
         display: flex; align-items: center;
     }
 
     .category-header::after {
         content: ""; flex: 1; height: 1px;
         background: linear-gradient(90deg, #FF4B4B, transparent);
-        margin-left: 15px; opacity: 0.3;
+        margin-left: 10px; opacity: 0.3;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Cabeçalho
+# 3. Cabeçalho (Logo VR)
 if os.path.exists("vr_logo.png"):
-    col_l, col_c, col_r = st.columns([1, 1.5, 1])
+    col_l, col_c, col_r = st.columns([1, 2, 1])
     with col_c:
         st.image("vr_logo.png", use_container_width=True)
 else:
-    st.markdown("<h1 style='text-align: center; color: #FF4B4B; letter-spacing: 5px; margin-bottom:0;'>VR</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #FF4B4B; letter-spacing: 5px;'>VR</h1>", unsafe_allow_html=True)
 
 st.markdown('<p class="titulo-cardapio">Cardápio Digital</p>', unsafe_allow_html=True)
-st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA, SÃO LUÍS - MA</p>', unsafe_allow_html=True)
-st.markdown('<p class="restricao-idade">🔞 PROIBIDO PARA MENORES DE 18 ANOS</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitulo-bar">Premium Bar</p>', unsafe_allow_html=True)
+
+# Endereço com quebra de linha organizada
+st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA<br>SÃO LUÍS - MA</p>', unsafe_allow_html=True)
+
+# Frase de proibição forçada em linha única
+st.markdown('<div class="restricao-idade">🔞 PROIBIDO PARA MENORES DE 18 ANOS</div>', unsafe_allow_html=True)
 
 # 4. Dados do Cardápio
 cardapio = {
@@ -136,20 +148,20 @@ for categoria, itens in cardapio.items():
     st.markdown(f"<div class='category-header'>{categoria}</div>", unsafe_allow_html=True)
     for item in itens:
         st.markdown('<div class="product-card">', unsafe_allow_html=True)
-        c1, c2, c3 = st.columns([0.5, 2, 0.9])
+        c1, c2, c3 = st.columns([0.6, 2, 1.1])
         with c1:
             if os.path.exists(item["img"]):
-                st.image(item["img"], width=60)
+                st.image(item["img"], width=45)
             else:
-                st.markdown("<div style='font-size:24px; padding-top:10px;'>🥃</div>", unsafe_allow_html=True)
+                st.markdown("<div style='font-size:18px;'>🥃</div>", unsafe_allow_html=True)
         with c2:
-            st.markdown(f"<div style='margin-left: 10px;'><span class='product-name'>{item['nome']}</span><span class='product-ml'>{item['ml']}</span></div>", unsafe_allow_html=True)
+            st.markdown(f"<div><span class='product-name'>{item['nome']}</span><br><span class='product-ml'>{item['ml']}</span></div>", unsafe_allow_html=True)
         with c3:
-            preco_visivel = f"{item['preco']:.2f}".replace('.', ',')
-            st.markdown(f"<div class='price-badge'>R$ {preco_visivel}</div>", unsafe_allow_html=True)
+            preco_formatado = f"{item['preco']:.2f}".replace('.', ',')
+            st.markdown(f"<div class='price-badge'>R$ {preco_formatado}</div>", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-# 6. Rodapé Atualizado com Créditos
+# 6. Rodapé
 st.divider()
 st.markdown(f"""
     <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
