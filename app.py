@@ -54,7 +54,6 @@ st.markdown("""
         line-height: 1.5;
     }
 
-    /* Correção para o aviso não quebrar linha no celular */
     .restricao-idade {
         color: #FF4B4B; text-align: center; font-size: 8.5px; font-weight: 800;
         letter-spacing: 1px; margin-bottom: 25px;
@@ -83,16 +82,22 @@ st.markdown("""
         min-width: 80px; text-align: center;
     }
     
+    /* AJUSTE SOLICITADO: Títulos das categorias maiores e mais destacados */
     .category-header {
-        color: #FFFFFF; text-transform: uppercase; letter-spacing: 3px;
-        font-size: 0.8rem; font-weight: 800; margin: 30px 0 12px 0;
-        display: flex; align-items: center;
+        color: #FFFFFF; 
+        text-transform: uppercase; 
+        letter-spacing: 5px; /* Aumentado */
+        font-size: 1.1rem;    /* Aumentado de 0.8rem para 1.1rem */
+        font-weight: 900;    /* Máximo destaque */
+        margin: 35px 0 15px 0;
+        display: flex; 
+        align-items: center;
     }
 
     .category-header::after {
-        content: ""; flex: 1; height: 1px;
+        content: ""; flex: 1; height: 2px; /* Linha levemente mais grossa */
         background: linear-gradient(90deg, #FF4B4B, transparent);
-        margin-left: 10px; opacity: 0.3;
+        margin-left: 15px; opacity: 0.5;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -156,7 +161,6 @@ for categoria, itens in cardapio.items():
         with c2:
             st.markdown(f"<div><span class='product-name'>{item['nome']}</span><br><span class='product-ml'>{item['ml']}</span></div>", unsafe_allow_html=True)
         with c3:
-            # Formatação solicitada: ex: 25,00
             preco_formatado = f"{item['preco']:.2f}".replace('.', ',')
             st.markdown(f"<div class='price-badge'>{preco_formatado}</div>", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
@@ -173,4 +177,3 @@ st.markdown(f"""
         </p>
     </div>
     """, unsafe_allow_html=True)
-
