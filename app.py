@@ -1,56 +1,64 @@
 import streamlit as st
 import os
+import base64
 
 # 1. Configuração da página
 st.set_page_config(page_title="VR - Vida Rasa", page_icon="🥃", layout="centered")
 
-# 2. Estilização Visual Avançada (CSS) - VERSÃO ULTRA PREMIUM
+# --- FUNÇÃO PARA CARREGAR IMAGEM DE FUNDO ---
+def get_base64(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+def set_background(png_file):
+    if os.path.exists(png_file):
+        bin_str = get_base64(png_file)
+        page_bg_img = f'''
+        <style>
+        .stApp {{
+            background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url("data:image/jpg;base64,{bin_str}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }}
+        </style>
+        '''
+        st.markdown(page_bg_img, unsafe_allow_html=True)
+
+# Chama a função do fundo (ajuste o nome do arquivo se necessário)
+set_background('fundo_bar.png')
+
+# 2. Estilização Visual Avançada (CSS)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;800&display=swap');
     
     .stApp { 
-        background-color: #050505; 
         color: white; 
         font-family: 'Inter', sans-serif; 
     }
 
     /* HEADER */
     .titulo-cardapio {
-        color: #FFFFFF;
-        font-size: 24px; 
-        font-weight: 200; 
-        text-align: center;
-        text-transform: uppercase;
-        letter-spacing: 12px; 
-        margin-top: 20px;
-        opacity: 0.9;
+        color: #FFFFFF; font-size: 24px; font-weight: 200; text-align: center;
+        text-transform: uppercase; letter-spacing: 12px; margin-top: 20px; opacity: 0.9;
     }
 
     .subtitulo-bar {
-        color: #FF4B4B;
-        text-align: center;
-        font-size: 12px; 
-        font-weight: 800;
-        letter-spacing: 8px; 
-        text-transform: uppercase;
-        margin-bottom: 5px;
+        color: #FF4B4B; text-align: center; font-size: 12px; font-weight: 800;
+        letter-spacing: 8px; text-transform: uppercase; margin-bottom: 5px;
     }
 
     .endereco-bar {
-        color: #888;
-        text-align: center;
-        font-size: 10px;
-        font-weight: 400;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 30px;
+        color: #888; text-align: center; font-size: 10px; font-weight: 400;
+        text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px;
     }
 
-    /* CARTÃO DO PRODUTO */
+    /* CARTÃO DO PRODUTO (EFEITO GLASSMORPISM) */
     .product-card {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(12px);
         border-left: 3px solid #FF4B4B;
         border-right: 1px solid rgba(255, 255, 255, 0.05);
         border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -60,55 +68,29 @@ st.markdown("""
         margin-bottom: 12px;
     }
     
-    .product-name { 
-        font-size: 1rem; 
-        font-weight: 600; 
-        color: #FFFFFF;
-        display: block;
-    }
-
-    .product-ml {
-        color: #888;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-top: 2px;
-    }
+    .product-name { font-size: 1rem; font-weight: 600; color: #FFFFFF; display: block; }
+    .product-ml { color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
 
     .price-badge {
         background: rgba(255, 75, 75, 0.1);
-        color: #FF4B4B;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-weight: 800;
-        font-size: 0.95rem;
-        border: 1px solid rgba(255, 75, 75, 0.2);
+        color: #FF4B4B; padding: 6px 12px; border-radius: 8px;
+        font-weight: 800; font-size: 0.95rem; border: 1px solid rgba(255, 75, 75, 0.2);
         text-align: center;
     }
     
     .category-header {
-        color: #FFFFFF;
-        text-transform: uppercase;
-        letter-spacing: 5px;
-        font-size: 0.9rem;
-        font-weight: 800;
-        margin: 45px 0 20px 0;
-        display: flex;
-        align-items: center;
+        color: #FFFFFF; text-transform: uppercase; letter-spacing: 5px;
+        font-size: 0.9rem; font-weight: 800; margin: 45px 0 20px 0;
+        display: flex; align-items: center;
     }
 
     .category-header::after {
-        content: "";
-        flex: 1;
-        height: 1px;
+        content: ""; flex: 1; height: 1px;
         background: linear-gradient(90deg, #FF4B4B, transparent);
-        margin-left: 15px;
-        opacity: 0.3;
+        margin-left: 15px; opacity: 0.3;
     }
 
-    .stImage img {
-        border-radius: 8px;
-    }
+    .stImage img { border-radius: 8px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -118,11 +100,10 @@ if os.path.exists("vr_logo.png"):
     with col_c:
         st.image("vr_logo.png", use_container_width=True)
 else:
-    st.markdown("<h1 style='text-align: center; color: #FF4B4B; letter-spacing: 5px;'>VR</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #FF4B4B; letter-spacing: 5px; margin-bottom:0;'>VR</h1>", unsafe_allow_html=True)
 
 st.markdown('<p class="titulo-cardapio">Cardápio Digital</p>', unsafe_allow_html=True)
 st.markdown('<p class="subtitulo-bar">Premium Bar</p>', unsafe_allow_html=True)
-# ENDEREÇO COMPLETO RESTAURADO
 st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA, SÃO LUÍS - MA</p>', unsafe_allow_html=True)
 
 # 4. Dados do Cardápio
@@ -156,7 +137,6 @@ cardapio = {
 
 # 5. Renderização
 for categoria, itens in cardapio.items():
-    # A correção está nas aspas antes do <div e depois do </div>
     st.markdown(f"<div class='category-header'>{categoria}</div>", unsafe_allow_html=True)
     
     for item in itens:
