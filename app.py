@@ -106,7 +106,6 @@ else:
     st.markdown("<h1 style='text-align: center; color: #FF4B4B; letter-spacing: 5px;'>VR</h1>", unsafe_allow_html=True)
 
 st.markdown('<p class="titulo-cardapio">Cardápio Digital</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitulo-bar">Premium Bar</p>', unsafe_allow_html=True)
 
 # Endereço com quebra de linha organizada
 st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA<br>SÃO LUÍS - MA</p>', unsafe_allow_html=True)
@@ -173,3 +172,4 @@ st.markdown(f"""
         </p>
     </div>
     """, unsafe_allow_html=True)
+
