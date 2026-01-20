@@ -27,7 +27,7 @@ def set_background(png_file):
         '''
         st.markdown(page_bg_img, unsafe_allow_html=True)
 
-set_background('fundo_bar.jpg')
+set_background('fundo_bar.png')
 
 # 2. CSS MOBILE-FIRST
 st.markdown("""
@@ -166,3 +166,4 @@ st.markdown(f"""
         </p>
     </div>
     """, unsafe_allow_html=True)
+
