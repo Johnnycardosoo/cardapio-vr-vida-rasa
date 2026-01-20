@@ -34,7 +34,6 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
     
-    /* Reset de margens para Celular */
     .block-container { padding-top: 2rem !important; padding-bottom: 2rem !important; }
     .stApp { color: white; font-family: 'Inter', sans-serif; }
 
@@ -58,7 +57,6 @@ st.markdown("""
         letter-spacing: 2px; margin-bottom: 25px;
     }
 
-    /* CARD OTIMIZADO PARA TOQUE */
     .product-card {
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(15px);
@@ -94,8 +92,14 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Cabeçalho (Logo ou Nome)
-st.markdown("<h1 style='text-align: center; color: #FF4B4B; letter-spacing: 5px; margin-bottom:0; font-size: 40px;'>VR</h1>", unsafe_allow_html=True)
+# 3. Cabeçalho com Logo (MANTIDO)
+if os.path.exists("vr_logo.png"):
+    col_l, col_c, col_r = st.columns([1, 1.5, 1])
+    with col_c:
+        st.image("vr_logo.png", use_container_width=True)
+else:
+    st.markdown("<h1 style='text-align: center; color: #FF4B4B; letter-spacing: 5px; margin-bottom:0; font-size: 40px;'>VR</h1>", unsafe_allow_html=True)
+
 st.markdown('<p class="titulo-cardapio">Cardápio</p>', unsafe_allow_html=True)
 st.markdown('<p class="subtitulo-bar">Premium Bar</p>', unsafe_allow_html=True)
 st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA</p>', unsafe_allow_html=True)
@@ -130,26 +134,25 @@ cardapio = {
     ]
 }
 
-# 5. Renderização Mobile
+# 5. Renderização
 for categoria, itens in cardapio.items():
     st.markdown(f"<div class='category-header'>{categoria}</div>", unsafe_allow_html=True)
     for item in itens:
-        with st.container():
-            st.markdown('<div class="product-card">', unsafe_allow_html=True)
-            c1, c2, c3 = st.columns([0.6, 2, 1.1])
-            with c1:
-                if os.path.exists(item["img"]):
-                    st.image(item["img"], width=50)
-                else:
-                    st.markdown("<div style='font-size:20px;'>🥃</div>", unsafe_allow_html=True)
-            with c2:
-                st.markdown(f"<div><span class='product-name'>{item['nome']}</span><br><span class='product-ml'>{item['ml']}</span></div>", unsafe_allow_html=True)
-            with c3:
-                preco_visivel = f"{item['preco']:.2f}".replace('.', ',')
-                st.markdown(f"<div class='price-badge'>R$ {preco_visivel}</div>", unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('<div class="product-card">', unsafe_allow_html=True)
+        c1, c2, c3 = st.columns([0.6, 2, 1.1])
+        with c1:
+            if os.path.exists(item["img"]):
+                st.image(item["img"], width=50)
+            else:
+                st.markdown("<div style='font-size:20px;'>🥃</div>", unsafe_allow_html=True)
+        with c2:
+            st.markdown(f"<div><span class='product-name'>{item['nome']}</span><br><span class='product-ml'>{item['ml']}</span></div>", unsafe_allow_html=True)
+        with c3:
+            preco_visivel = f"{item['preco']:.2f}".replace('.', ',')
+            st.markdown(f"<div class='price-badge'>R$ {preco_visivel}</div>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-# 6. Rodapé Mobile
+# 6. Rodapé
 st.markdown("<br>", unsafe_allow_html=True)
 st.divider()
 st.markdown(f"""
