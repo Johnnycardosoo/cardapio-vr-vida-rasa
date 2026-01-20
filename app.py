@@ -4,10 +4,10 @@ import os
 # 1. Configuração da página
 st.set_page_config(page_title="VR - Vida Rasa", page_icon="🥃", layout="centered")
 
-# 2. Estilização Visual Avançada (CSS) - VERSÃO PREMIUM
+# 2. Estilização Visual Avançada (CSS) - VERSÃO ULTRA PREMIUM
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;800&display=swap');
     
     .stApp { 
         background-color: #050505; 
@@ -15,29 +15,26 @@ st.markdown("""
         font-family: 'Inter', sans-serif; 
     }
 
-    /* TÍTULO EM CAIXA ALTA, FINO E ELEGANTE */
+    /* HEADER */
     .titulo-cardapio {
         color: #FFFFFF;
-        font-family: 'Inter', sans-serif;
-        font-size: 26px; 
+        font-size: 24px; 
         font-weight: 200; 
         text-align: center;
         text-transform: uppercase;
-        letter-spacing: 10px; 
-        margin-top: 30px;
-        margin-bottom: 5px;
-        opacity: 0.8;
+        letter-spacing: 12px; 
+        margin-top: 20px;
+        opacity: 0.9;
     }
 
     .subtitulo-bar {
         color: #FF4B4B;
         text-align: center;
-        font-size: 14px; 
-        font-weight: 600;
-        letter-spacing: 10px; 
+        font-size: 12px; 
+        font-weight: 800;
+        letter-spacing: 8px; 
         text-transform: uppercase;
-        margin-bottom: 10px;
-        opacity: 0.9;
+        margin-bottom: 5px;
     }
 
     .endereco-bar {
@@ -47,82 +44,94 @@ st.markdown("""
         font-weight: 400;
         text-transform: uppercase;
         letter-spacing: 2px;
-        margin-bottom: 40px;
+        margin-bottom: 30px;
     }
 
-    /* CARTÃO DO PRODUTO (EFEITO GLASS) */
+    /* CARTÃO DO PRODUTO */
     .product-card {
         background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 15px;
-        padding: 15px;
-        margin-bottom: 15px;
-        transition: transform 0.3s ease, background 0.3s ease;
-    }
-    
-    .product-card:hover {
-        background: rgba(255, 255, 255, 0.07);
-        transform: translateY(-2px);
-        border-color: rgba(255, 75, 75, 0.3);
-    }
-
-    .price-tag {
-        color: #FF4B4B;
-        font-weight: 800;
-        font-size: 1.2rem;
-        margin-top: 10px;
+        backdrop-filter: blur(10px);
+        border-left: 3px solid #FF4B4B;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 12px;
     }
     
     .product-name { 
-        font-size: 1.1rem; 
+        font-size: 1rem; 
         font-weight: 600; 
         color: #FFFFFF;
-        letter-spacing: 0.5px;
+        display: block;
+    }
+
+    .product-ml {
+        color: #888;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 2px;
+    }
+
+    .price-badge {
+        background: rgba(255, 75, 75, 0.1);
+        color: #FF4B4B;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 800;
+        font-size: 0.95rem;
+        border: 1px solid rgba(255, 75, 75, 0.2);
+        text-align: center;
     }
     
     .category-header {
         color: #FFFFFF;
         text-transform: uppercase;
-        text-align: center;
-        letter-spacing: 4px;
-        font-size: 1.1rem;
-        font-weight: 400;
-        margin: 60px 0 30px 0;
-        border-bottom: 1px solid #333;
-        padding-bottom: 10px;
+        letter-spacing: 5px;
+        font-size: 0.9rem;
+        font-weight: 800;
+        margin: 45px 0 20px 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .category-header::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, #FF4B4B, transparent);
+        margin-left: 15px;
+        opacity: 0.3;
     }
 
     .stImage img {
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        border-radius: 8px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Cabeçalho (Logo e Títulos)
+# 3. Cabeçalho
 if os.path.exists("vr_logo.png"):
-    col_l, col_c, col_r = st.columns([1, 1.8, 1])
+    col_l, col_c, col_r = st.columns([1, 1.5, 1])
     with col_c:
         st.image("vr_logo.png", use_container_width=True)
 else:
-    st.markdown("<h1 style='text-align: center; color: #FF4B4B; margin-bottom: 0px;'>VR - VIDA RASA</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #FF4B4B; letter-spacing: 5px;'>VR</h1>", unsafe_allow_html=True)
 
-st.markdown('<p class="titulo-cardapio">CARDÁPIO DIGITAL</p>', unsafe_allow_html=True)
-st.markdown('<p class="subtitulo-bar">PREMIUM BAR</p>', unsafe_allow_html=True)
-
-# Endereço como texto simples
+st.markdown('<p class="titulo-cardapio">Cardápio Digital</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitulo-bar">Premium Bar</p>', unsafe_allow_html=True)
+# ENDEREÇO COMPLETO RESTAURADO
 st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA, SÃO LUÍS - MA</p>', unsafe_allow_html=True)
 
-st.divider()
-
 # 4. Dados do Cardápio
-# 4. Dados do Cardápio (SEM DESCRIÇÕES)
 cardapio = {
     "CERVEJAS": [
         {"nome": "Stella Artois", "preco": 15.00, "img": "stella_600ml.png", "ml": "600ml"},
-        {"nome": "Stella Long Neck", "preco": 12.00, "img": "stella_long.png", "ml": "350ml"},
-        {"nome": "Corona", "preco": 12.00, "img": "corona_long.png", "ml": "350ml"},
-        {"nome": "Skol Beats Lata", "preco": 10.00, "img": "skol_beats_lata.png", "ml": "269ml"}
+        {"nome": "Stella Long Neck", "preco": 12.00, "img": "stella_long.png", "ml": "330ml"},
+        {"nome": "Corona Extra", "preco": 12.00, "img": "corona_long.png", "ml": "330ml"},
+        {"nome": "Skol Beats", "preco": 10.00, "img": "skol_beats_lata.png", "ml": "269ml"}
     ],
     "COPÃO": [
         {"nome": "Copão Whisky", "preco": 25.00, "img": "copao.png", "ml": "500ml"},
@@ -130,7 +139,7 @@ cardapio = {
     ],
     "COMBOS": [
         {"nome": "Combo Buchanan's", "preco": 400.00, "img": "combo_buchanans.png", "ml": "1L + 4 Energéticos"},
-        {"nome": "Combo Old Parr", "preco": 350.00, "img": "combo_oldparr.png", "ml": "1L + Gelo Saborizado"},
+        {"nome": "Combo Old Parr", "preco": 350.00, "img": "combo_oldparr.png", "ml": "1L + Gelo Sabor"},
         {"nome": "Combo Red Label", "preco": 250.00, "img": "combo_red.png", "ml": "1L + Gelo"}
     ],
     "DOSES": [
@@ -140,34 +149,38 @@ cardapio = {
     ],
     "EXTRAS": [
         {"nome": "Água Mineral", "preco": 5.00, "img": "agua.png", "ml": "500ml"},
-        {"nome": "Gelo Saborizado", "preco": 10.00, "img": "gelo.png", "ml": "Coco, Maracujá ou Melancia"},
+        {"nome": "Gelo Saborizado", "preco": 10.00, "img": "gelo.png", "ml": "Unidade"},
         {"nome": "Gelo em Cubos", "preco": 20.00, "img": "gelo.png", "ml": "Pacote 5kg"}
     ]
 }
 
-# 5. Renderização (ML posicionado abaixo do Nome)
+# 5. Renderização
 for categoria, itens in cardapio.items():
-    st.markdown(f"<h3 class='category-header'>{categoria}</h3>", unsafe_allow_html=True)
+    # A correção está nas aspas antes do <div e depois do </div>
+    st.markdown(f"<div class='category-header'>{categoria}</div>", unsafe_allow_html=True)
     
     for item in itens:
         st.markdown('<div class="product-card">', unsafe_allow_html=True)
-        c1, c2 = st.columns([0.4, 2]) 
+        c1, c2, c3 = st.columns([0.5, 2, 0.9])
         
         with c1:
             if os.path.exists(item["img"]):
-                st.image(item["img"], width=70) 
+                st.image(item["img"], width=60)
             else:
-                st.markdown("<div style='width:70px; height:70px; background:#1a1a1a; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px;'>📷</div>", unsafe_allow_html=True)
+                st.markdown("<div style='font-size:24px; padding-top:10px;'>🥃</div>", unsafe_allow_html=True)
         
         with c2:
-            # 1. Nome do Produto
-            st.markdown(f"<div style='margin-top: -5px;'><span class='product-name'>{item['nome']}</span></div>", unsafe_allow_html=True)
+            st.markdown(f"""
+                <div style='margin-left: 10px;'>
+                    <span class="product-name">{item['nome']}</span>
+                    <span class="product-ml">{item['ml']}</span>
+                </div>
+            """, unsafe_allow_html=True)
             
-            # 2. ML (Abaixo do nome, discreto e elegante)
-            st.markdown(f"<div style='color: #888; font-size: 0.85rem; margin-top: 2px; letter-spacing: 0.5px;'>{item['ml']}</div>", unsafe_allow_html=True)
+        with c3:
+            preco_visivel = f"{item['preco']:.2f}".replace('.', ',')
+            st.markdown(f"<div class='price-badge'>R$ {preco_visivel}</div>", unsafe_allow_html=True)
             
-            # 3. Preço
-            st.markdown(f"<div class='price-tag'>R$ {item['preco']:.2f}</div>", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 # 6. Rodapé Finalizado
