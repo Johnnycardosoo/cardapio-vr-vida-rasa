@@ -28,7 +28,7 @@ def set_background(png_file):
         st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # Aplica a imagem de fundo personalizada do bar
-set_background('fundo_bar.jpg')
+set_background('fundo_bar.png')
 
 # 2. CSS Customizado para Mobile (Ajustes de precisão conforme o print)
 st.markdown("""
@@ -173,3 +173,4 @@ st.markdown(f"""
         </p>
     </div>
     """, unsafe_allow_html=True)
+
