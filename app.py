@@ -26,7 +26,6 @@ def set_background(png_file):
         '''
         st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Chama a função do fundo (ajuste o nome do arquivo se necessário)
 set_background('fundo_bar.png')
 
 # 2. Estilização Visual Avançada (CSS)
@@ -34,12 +33,8 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;800&display=swap');
     
-    .stApp { 
-        color: white; 
-        font-family: 'Inter', sans-serif; 
-    }
+    .stApp { color: white; font-family: 'Inter', sans-serif; }
 
-    /* HEADER */
     .titulo-cardapio {
         color: #FFFFFF; font-size: 24px; font-weight: 200; text-align: center;
         text-transform: uppercase; letter-spacing: 12px; margin-top: 20px; opacity: 0.9;
@@ -52,20 +47,23 @@ st.markdown("""
 
     .endereco-bar {
         color: #888; text-align: center; font-size: 10px; font-weight: 400;
-        text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px;
+        text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;
     }
 
-    /* CARTÃO DO PRODUTO (EFEITO GLASSMORPISM) */
+    .restricao-idade {
+        color: #FF4B4B; text-align: center; font-size: 9px; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 3px; margin-bottom: 30px;
+        opacity: 0.8;
+    }
+
     .product-card {
         background: rgba(255, 255, 255, 0.04);
         backdrop-filter: blur(12px);
         border-left: 3px solid #FF4B4B;
-        border-right: 1px solid rgba(255, 255, 255, 0.05);
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 12px;
         padding: 18px;
         margin-bottom: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
     
     .product-name { font-size: 1rem; font-weight: 600; color: #FFFFFF; display: block; }
@@ -89,8 +87,6 @@ st.markdown("""
         background: linear-gradient(90deg, #FF4B4B, transparent);
         margin-left: 15px; opacity: 0.3;
     }
-
-    .stImage img { border-radius: 8px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -105,6 +101,7 @@ else:
 st.markdown('<p class="titulo-cardapio">Cardápio Digital</p>', unsafe_allow_html=True)
 st.markdown('<p class="subtitulo-bar">Premium Bar</p>', unsafe_allow_html=True)
 st.markdown('<p class="endereco-bar">📍 AV. VATICANO, N° 4 - ANJO DA GUARDA, SÃO LUÍS - MA</p>', unsafe_allow_html=True)
+st.markdown('<p class="restricao-idade">🔞 PROIBIDO PARA MENORES DE 18 ANOS</p>', unsafe_allow_html=True)
 
 # 4. Dados do Cardápio
 cardapio = {
@@ -138,42 +135,30 @@ cardapio = {
 # 5. Renderização
 for categoria, itens in cardapio.items():
     st.markdown(f"<div class='category-header'>{categoria}</div>", unsafe_allow_html=True)
-    
     for item in itens:
         st.markdown('<div class="product-card">', unsafe_allow_html=True)
         c1, c2, c3 = st.columns([0.5, 2, 0.9])
-        
         with c1:
             if os.path.exists(item["img"]):
                 st.image(item["img"], width=60)
             else:
                 st.markdown("<div style='font-size:24px; padding-top:10px;'>🥃</div>", unsafe_allow_html=True)
-        
         with c2:
-            st.markdown(f"""
-                <div style='margin-left: 10px;'>
-                    <span class="product-name">{item['nome']}</span>
-                    <span class="product-ml">{item['ml']}</span>
-                </div>
-            """, unsafe_allow_html=True)
-            
+            st.markdown(f"<div style='margin-left: 10px;'><span class='product-name'>{item['nome']}</span><span class='product-ml'>{item['ml']}</span></div>", unsafe_allow_html=True)
         with c3:
             preco_visivel = f"{item['preco']:.2f}".replace('.', ',')
             st.markdown(f"<div class='price-badge'>R$ {preco_visivel}</div>", unsafe_allow_html=True)
-            
         st.markdown('</div>', unsafe_allow_html=True)
 
-# 6. Rodapé Finalizado
+# 6. Rodapé Atualizado com Créditos
 st.divider()
 st.markdown(f"""
-    <div style='text-align: center; padding-bottom: 40px; padding-top: 20px;'>
-        <p style='color: #FF4B4B; font-weight: bold; font-size: 1.1rem; margin-bottom: 10px; letter-spacing: 1px;'>
-            www.vrvidarasa.com.br
-        </p>
-        <p style='color: #888; font-size: 0.85rem; line-height: 1.6;'>
-            <span style='letter-spacing: 1px;'>Copyright © 2026 <b>VR - VIDA RASA</b></span><br>
-            <b>Todos os direitos reservados.</b><br>
-            <span style='font-size: 0.75rem; color: #555;'>Proibido para menores de 18 anos.</span>
+    <div style='text-align: center; padding-bottom: 40px;'>
+        <p style='color: #FF4B4B; font-weight: bold; font-size: 1.1rem; margin-bottom: 10px;'>www.vrvidarasa.com.br</p>
+        <p style='color: #888; font-size: 0.85rem;'>
+            Copyright © 2026 <b>VR - VIDA RASA</b><br>
+            Todos os direitos reservados.<br>
+            <span style='font-size: 0.75rem; opacity: 0.6;'>Desenvolvido por <b>Johnny Cardoso</b></span>
         </p>
     </div>
     """, unsafe_allow_html=True)
