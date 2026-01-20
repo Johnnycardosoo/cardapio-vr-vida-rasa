@@ -156,8 +156,9 @@ for categoria, itens in cardapio.items():
         with c2:
             st.markdown(f"<div><span class='product-name'>{item['nome']}</span><br><span class='product-ml'>{item['ml']}</span></div>", unsafe_allow_html=True)
         with c3:
+            # Formatação solicitada: ex: 25,00
             preco_formatado = f"{item['preco']:.2f}".replace('.', ',')
-            st.markdown(f"<div class='price-badge'>R$ {preco_formatado}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='price-badge'>{preco_formatado}</div>", unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 # 6. Rodapé
@@ -172,4 +173,3 @@ st.markdown(f"""
         </p>
     </div>
     """, unsafe_allow_html=True)
-
