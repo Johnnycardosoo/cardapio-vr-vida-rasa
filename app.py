@@ -4,12 +4,12 @@ import os
 import base64
 
 # --- 1. CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(
-    page_title="VR - Cardápio Digital", 
-    page_icon="🥃", 
-    layout="centered",
-    initial_sidebar_state="collapsed"
-)
+def conectar_db():
+    # Adicionamos um timeout para evitar que a conexão trave se houver lentidão no servidor
+    conn = sqlite3.connect('cardapio_vr.db', check_same_thread=False, timeout=10)
+    # Ativa o modo WAL para permitir leitura e escrita simultâneas de forma mais rápida
+    conn.execute("PRAGMA journal_mode=WAL;")
+    return conn
 
 # Otimização: Cache para a conexão do banco
 @st.cache_resource
@@ -169,3 +169,4 @@ st.markdown(f'''
         <p style="color:#555; font-size:0.75rem;">Copyright © 2026 <b>VR - VIDA RASA</b><br>Desenvolvido por Johnny Cardoso</p>
     </div>
 ''', unsafe_allow_html=True)
+
