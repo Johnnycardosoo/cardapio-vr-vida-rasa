@@ -37,39 +37,31 @@ def inicializar_sistema():
 
 inicializar_sistema()
 
-# BLOCO TEMPORÁRIO PARA CORREÇÃO
-conn = conectar_db()
-# Isso vai forçar todos os produtos "Red Bull" a usarem o arquivo correto que vimos no seu GitHub
-conn.execute("UPDATE produtos SET img_path = 'img/red_bull.png' WHERE nome LIKE '%Red Bull%'")
-conn.commit()
-conn.close()
-st.success("Caminhos de imagem corrigidos no banco!")
-
-# --- 3. FUNÇÕES DE SUPORTE (VERSÃO FINAL PARA GITHUB/NUVEM) ---
+# --- 3. FUNÇÕES DE SUPORTE ---
 @st.cache_data
 def carregar_imagem_base64(caminho):
     if not caminho:
         return None
     
-    # Pega o diretório atual onde o app.py está rodando
     diretorio_atual = os.path.dirname(os.path.abspath(__file__))
-    
-    # Limpa o caminho (remove 'img/' se já vier no nome para não duplicar)
     nome_arquivo = os.path.basename(caminho)
-    caminho_real = os.path.join(diretorio_atual, "img", nome_arquivo)
     
-    # Se não achar na pasta img, tenta o caminho direto
-    if not os.path.exists(caminho_real):
-        caminho_real = os.path.join(diretorio_atual, nome_arquivo)
-
-    if os.path.exists(caminho_real):
-        ext = caminho_real.split('.')[-1].lower()
-        mime = f"image/{ext if ext != 'jpg' else 'jpeg'}"
-        
-        with open(caminho_real, "rb") as f:
-            data = f.read()
-            encoded = base64.b64encode(data).decode()
-            return f"data:{mime};base64,{encoded}"
+    # Tenta localizar o arquivo em 3 caminhos possíveis
+    tentativas = [
+        os.path.join(diretorio_atual, "img", nome_arquivo),
+        os.path.join(diretorio_atual, nome_arquivo),
+        caminho
+    ]
+    
+    for real_path in tentativas:
+        if os.path.exists(real_path):
+            ext = real_path.split('.')[-1].lower()
+            mime = f"image/{ext if ext != 'jpg' else 'jpeg'}"
+            with open(real_path, "rb") as f:
+                data = f.read()
+                encoded = base64.b64encode(data).decode()
+                return f"data:{mime};base64,{encoded}"
+    return None
 
 # --- 4. BARRA LATERAL (GESTÃO VR) ---
 with st.sidebar:
@@ -78,6 +70,26 @@ with st.sidebar:
     
     if senha == "@Hagatavr25#":
         st.success("Acesso Liberado")
+        
+        # --- FUNÇÃO DE AUTO-CORREÇÃO ---
+        if st.button("🔧 Corrigir Caminhos de Fotos"):
+            db = conectar_db()
+            cursor = db.cursor()
+            cursor.execute("SELECT id, img_path FROM produtos")
+            itens = cursor.fetchall()
+            corrigidos = 0
+            
+            for item_id, path in itens:
+                nome_arq = os.path.basename(path)
+                novo_caminho = os.path.join("img", nome_arq)
+                cursor.execute("UPDATE produtos SET img_path = ? WHERE id = ?", (novo_caminho, item_id))
+                corrigidos += 1
+            
+            db.commit()
+            db.close()
+            st.cache_data.clear()
+            st.success(f"Sucesso! {corrigidos} caminhos atualizados.")
+            st.rerun()
         
         if os.path.exists("cardapio_vr.db"):
             with open("cardapio_vr.db", "rb") as f:
@@ -123,59 +135,48 @@ with st.sidebar:
                     n_nome = st.text_input("Nome", value=it_sel[1])
                     n_prec = st.number_input("Preço", value=float(it_sel[2]))
                     n_desc = st.text_input("ML", value=it_sel[3])
-                    n_disp = st.checkbox("Produto Disponível (Mostrar no Cardápio)", value=True if it_sel[6] == 1 else False)
+                    n_disp = st.checkbox("Produto Disponível", value=True if it_sel[6] == 1 else False)
                     n_foto = st.file_uploader("Trocar Foto", type=['png', 'jpg', 'jpeg'])
                     
                     if st.form_submit_button("💾 SALVAR ALTERAÇÕES"):
                         cam_f = os.path.join("img", n_foto.name) if n_foto else it_sel[4]
-                        val_disp = 1 if n_disp else 0
                         if n_foto:
                             with open(cam_f, "wb") as f: f.write(n_foto.getbuffer())
-                        cursor.execute("UPDATE produtos SET nome=?, preco=?, ml=?, img_path=?, disponivel=? WHERE id=?", (n_nome, n_prec, n_desc, cam_f, val_disp, it_sel[0]))
+                        cursor.execute("UPDATE produtos SET nome=?, preco=?, ml=?, img_path=?, disponivel=? WHERE id=?", (n_nome, n_prec, n_desc, cam_f, 1 if n_disp else 0, it_sel[0]))
                         db.commit()
                         st.cache_data.clear()
                         st.rerun()
 
         elif aba == "Excluir":
-            t_ex = st.selectbox("O que deseja excluir?", ["Um Produto", "Uma Categoria Inteira"])
-            if t_ex == "Um Produto":
-                cursor.execute("SELECT id, nome, categoria FROM produtos ORDER BY categoria")
-                lista_p = cursor.fetchall()
-                if lista_p:
-                    it = st.selectbox("Escolha o item", lista_p, format_func=lambda x: f"[{x[2]}] {x[1]}")
-                    if st.button("❌ EXCLUIR ITEM PERMANENTEMENTE"):
-                        cursor.execute("DELETE FROM produtos WHERE id = ?", (it[0],))
-                        db.commit(); st.cache_data.clear(); st.rerun()
-            else:
-                if categorias_existentes:
-                    cat_ex = st.selectbox("Escolha a categoria", categorias_existentes)
-                    if st.button("🔥 EXCLUIR CATEGORIA INTEIRA"):
-                        cursor.execute("DELETE FROM produtos WHERE categoria = ?", (cat_ex,))
-                        db.commit(); st.cache_data.clear(); st.rerun()
+            cursor.execute("SELECT id, nome, categoria FROM produtos ORDER BY categoria")
+            lista_p = cursor.fetchall()
+            if lista_p:
+                it = st.selectbox("Escolha o item", lista_p, format_func=lambda x: f"[{x[2]}] {x[1]}")
+                if st.button("❌ EXCLUIR ITEM"):
+                    cursor.execute("DELETE FROM produtos WHERE id = ?", (it[0],))
+                    db.commit(); st.cache_data.clear(); st.rerun()
         db.close()
 
 # --- 5. CORPO DO CARDÁPIO ---
-
-# Fundo do bar
 fundo_data = carregar_imagem_base64('fundo_bar.png') or carregar_imagem_base64('img/fundo_bar.png')
 if fundo_data:
     st.markdown(f'''<style>.stApp {{ background-image: linear-gradient(rgba(0,0,0,0.88), rgba(0,0,0,0.88)), url("{fundo_data}"); background-size: cover; background-position: center; background-attachment: fixed; }} </style>''', unsafe_allow_html=True)
 
-# 5.1 Cabeçalho
 logo_data = carregar_imagem_base64("vr_logo.png") or carregar_imagem_base64("img/vr_logo.png")
 if logo_data:
-    st.markdown(f'''
-        <div style="text-align:center;">
-            <img src="{logo_data}" width="180">
-            <p style="color:white; letter-spacing:5px; font-weight:200; margin-top:10px; margin-bottom:5px;">CARDÁPIO DIGITAL</p>
-            <p style="color:#888; font-size:0.85rem; margin-bottom:5px; line-height:1.4;">
-                📍 Av. Vaticano, N° 4 - Anjo da Guarda<br>São Luís - MA, 65071-383
-            </p>
-            <div style="display:inline-block; border:1px solid #FF4B4B; color:#FF4B4B; padding:2px 12px; border-radius:5px; font-size:0.7rem; font-weight:bold; margin-top:5px;">
-                🔞 PROIBIDO PARA MENORES DE 18 ANOS
-            </div>
+    st.markdown(f'<div style="text-align:center;"><img src="{logo_data}" width="180"></div>', unsafe_allow_html=True)
+
+st.markdown(f'''
+    <div style="text-align:center;">
+        <p style="color:white; letter-spacing:5px; font-weight:200; margin-top:10px; margin-bottom:5px;">CARDÁPIO DIGITAL</p>
+        <p style="color:#888; font-size:0.85rem; margin-bottom:5px; line-height:1.4;">
+            📍 Av. Vaticano, N° 4 - Anjo da Guarda<br>São Luís - MA, 65071-383
+        </p>
+        <div style="display:inline-block; border:1px solid #FF4B4B; color:#FF4B4B; padding:2px 12px; border-radius:5px; font-size:0.7rem; font-weight:bold; margin-top:5px;">
+            🔞 PROIBIDO PARA MENORES DE 18 ANOS
         </div>
-    ''', unsafe_allow_html=True)
+    </div>
+''', unsafe_allow_html=True)
 
 # 5.2 Listagem de Produtos
 db = conectar_db()
@@ -192,10 +193,8 @@ for p in todos_produtos:
 for cat, itens in menu.items():
     st.markdown(f"<div style='color:white; text-transform:uppercase; letter-spacing:4px; font-weight:900; margin-top:30px; border-bottom: 2px solid #FF4B4B; padding-bottom:5px; margin-bottom:15px;'>{cat}</div>", unsafe_allow_html=True)
     for p in itens:
-        # A função carregar_imagem_base64 agora já retorna o prefixo correto (data:image/...)
         img_data = carregar_imagem_base64(p[4])
         img_html = f'<img src="{img_data}" style="max-width:100%; max-height:100%; object-fit: contain;">' if img_data else '🥃'
-        
         preco_formatado = f"{p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
         st.markdown(f"""
@@ -219,6 +218,3 @@ st.markdown(f"""
         </p>
     </div>
     """, unsafe_allow_html=True)
-
-
-
