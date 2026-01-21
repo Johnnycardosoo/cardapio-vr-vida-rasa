@@ -4,17 +4,18 @@ import os
 import base64
 
 # --- 1. CONFIGURAÇÃO DA PÁGINA ---
+st.set_page_config(
+    page_title="VR - Cardápio Digital", 
+    page_icon="🥃", 
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
+
+# Otimização: Conexão com timeout e modo de escrita rápida (WAL)
 def conectar_db():
-    # Adicionamos um timeout para evitar que a conexão trave se houver lentidão no servidor
     conn = sqlite3.connect('cardapio_vr.db', check_same_thread=False, timeout=10)
-    # Ativa o modo WAL para permitir leitura e escrita simultâneas de forma mais rápida
     conn.execute("PRAGMA journal_mode=WAL;")
     return conn
-
-# Otimização: Cache para a conexão do banco
-@st.cache_resource
-def conectar_db():
-    return sqlite3.connect('cardapio_vr.db', check_same_thread=False)
 
 # --- 2. INICIALIZAÇÃO ---
 def inicializar_sistema():
@@ -25,12 +26,11 @@ def inicializar_sistema():
                     (id INTEGER PRIMARY KEY AUTOINCREMENT, 
                      categoria TEXT, nome TEXT, preco REAL, ml TEXT, img_path TEXT)''')
     conn.commit()
+    conn.close()
 
 inicializar_sistema()
 
-# --- 3. FUNÇÕES DE SUPORTE (COM CACHE) ---
-
-# Otimização: Cache para conversão de imagens (evita processamento repetido)
+# --- 3. FUNÇÕES DE SUPORTE ---
 @st.cache_data
 def carregar_imagem_base64(caminho):
     if caminho and os.path.exists(caminho):
@@ -43,12 +43,19 @@ def carregar_imagem_base64(caminho):
 with st.sidebar:
     st.title("⚙️ Gestão VR")
     senha = st.text_input("Senha Admin", type="password")
+    
     if senha == "vr2026":
         st.success("Acesso Liberado")
         
+        # Botão de Download do Banco de Dados
         if os.path.exists("cardapio_vr.db"):
             with open("cardapio_vr.db", "rb") as f:
-                st.download_button(label="📥 Baixar Backup", data=f, file_name="cardapio_vr.db")
+                st.download_button(
+                    label="📥 Baixar Banco de Dados (Backup)",
+                    data=f,
+                    file_name="cardapio_vr.db",
+                    mime="application/octet-stream"
+                )
         
         st.divider()
         aba = st.radio("Ação:", ["Novo Produto", "Editar Produto", "Excluir"])
@@ -60,8 +67,8 @@ with st.sidebar:
 
         if aba == "Novo Produto":
             st.subheader("📦 Novo Item")
-            criar_nova = st.checkbox("➕ Nova Categoria?")
-            cat_final = st.text_input("Nome").upper() if criar_nova else st.selectbox("Categoria", categorias_existentes if categorias_existentes else ["CERVEJAS"])
+            criar_nova = st.checkbox("➕ Cadastrar Nova Categoria?")
+            cat_final = st.text_input("Nome da Categoria").upper() if criar_nova else st.selectbox("Categoria", categorias_existentes if categorias_existentes else ["CERVEJAS"])
             with st.form("form_novo", clear_on_submit=True):
                 nome = st.text_input("Nome do Produto")
                 prec = st.number_input("Preço", min_value=0.0)
@@ -73,20 +80,20 @@ with st.sidebar:
                         with open(caminho_img, "wb") as f: f.write(arquivo.getbuffer())
                         cursor.execute("INSERT INTO produtos (categoria, nome, preco, ml, img_path) VALUES (?,?,?,?,?)", (cat_final, nome, prec, desc, caminho_img))
                         db.commit()
-                        st.cache_data.clear() # Limpa o cache para mostrar o novo item
+                        st.cache_data.clear()
                         st.rerun()
 
         elif aba == "Editar Produto":
             cursor.execute("SELECT id, nome, preco, ml, img_path, categoria FROM produtos")
             todos = cursor.fetchall()
             if todos:
-                it_sel = st.selectbox("Produto", todos, format_func=lambda x: f"[{x[5]}] {x[1]}")
+                it_sel = st.selectbox("Selecione o produto", todos, format_func=lambda x: f"[{x[5]}] {x[1]}")
                 with st.form("form_editar"):
                     n_nome = st.text_input("Nome", value=it_sel[1])
                     n_prec = st.number_input("Preço", value=float(it_sel[2]))
                     n_desc = st.text_input("ML", value=it_sel[3])
                     n_foto = st.file_uploader("Trocar Foto", type=['png', 'jpg', 'jpeg'])
-                    if st.form_submit_button("💾 SALVAR"):
+                    if st.form_submit_button("💾 SALVAR ALTERAÇÕES"):
                         cam_f = os.path.join("img", n_foto.name) if n_foto else it_sel[4]
                         if n_foto:
                             with open(cam_f, "wb") as f: f.write(n_foto.getbuffer())
@@ -96,25 +103,26 @@ with st.sidebar:
                         st.rerun()
 
         elif aba == "Excluir":
-            t_ex = st.selectbox("Tipo", ["Um Produto", "Uma Categoria Inteira"])
+            t_ex = st.selectbox("O que deseja excluir?", ["Um Produto", "Uma Categoria Inteira"])
             if t_ex == "Um Produto":
-                cursor.execute("SELECT id, nome FROM produtos")
-                itens = cursor.fetchall()
-                if itens:
-                    it_del = st.selectbox("Item", itens, format_func=lambda x: x[1])
-                    if st.button("❌ EXCLUIR"):
-                        cursor.execute("DELETE FROM produtos WHERE id = ?", (it_del[0],))
+                cursor.execute("SELECT id, nome, categoria FROM produtos ORDER BY categoria")
+                lista_p = cursor.fetchall()
+                if lista_p:
+                    it = st.selectbox("Escolha o item", lista_p, format_func=lambda x: f"[{x[2]}] {x[1]}")
+                    if st.button("❌ EXCLUIR ITEM"):
+                        cursor.execute("DELETE FROM produtos WHERE id = ?", (it[0],))
                         db.commit(); st.cache_data.clear(); st.rerun()
             else:
                 if categorias_existentes:
-                    c_ex = st.selectbox("Categoria", categorias_existentes)
-                    if st.button("🔥 EXCLUIR TUDO"):
-                        cursor.execute("DELETE FROM produtos WHERE categoria = ?", (c_ex,))
+                    cat_ex = st.selectbox("Escolha a categoria", categorias_existentes)
+                    if st.button("🔥 EXCLUIR CATEGORIA"):
+                        cursor.execute("DELETE FROM produtos WHERE categoria = ?", (cat_ex,))
                         db.commit(); st.cache_data.clear(); st.rerun()
+        db.close()
 
 # --- 5. CORPO DO CARDÁPIO ---
 
-# Fundo do bar (com cache manual no carregamento)
+# Fundo do bar
 fundo_b64 = carregar_imagem_base64('fundo_bar.png')
 if fundo_b64:
     st.markdown(f'''<style>.stApp {{ background-image: linear-gradient(rgba(0,0,0,0.88), rgba(0,0,0,0.88)), url("data:image/png;base64,{fundo_b64}"); background-size: cover; background-position: center; background-attachment: fixed; }} </style>''', unsafe_allow_html=True)
@@ -141,7 +149,7 @@ cursor = db.cursor()
 cursor.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos ORDER BY categoria, nome")
 todos_produtos = cursor.fetchall()
 
-# Organizar produtos por categoria em um dicionário
+# Organizar categorias
 menu = {}
 for p in todos_produtos:
     cat = p[0]
@@ -161,6 +169,7 @@ for cat, itens in menu.items():
             <div style="color:#FF4B4B; font-weight:900; font-size:1.1rem; background:rgba(255,75,75,0.1); padding:8px; border-radius:8px; white-space: nowrap;">R$ {p[2]:.2f}</div>
         </div>
         """, unsafe_allow_html=True)
+db.close()
 
 # 5.3 Rodapé
 st.markdown(f'''
@@ -169,4 +178,3 @@ st.markdown(f'''
         <p style="color:#555; font-size:0.75rem;">Copyright © 2026 <b>VR - VIDA RASA</b><br>Desenvolvido por Johnny Cardoso</p>
     </div>
 ''', unsafe_allow_html=True)
-
