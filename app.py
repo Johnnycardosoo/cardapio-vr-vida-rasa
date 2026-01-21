@@ -187,7 +187,7 @@ db.close()
 st.divider()
 st.markdown(f"""
     <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
-        <p style='color: #FF4B4B; font-weight: bold; font-size: 1rem; margin-bottom: 10px;'>www.cardapiovr.com.br</p>
+        <p style='color: #FF4B4B; font-weight: bold; font-size: 1rem; margin-bottom: 10px;'>cardapiovr.com.br</p>
         <p style='color: #888; font-size: 0.85rem; line-height: 1.6;'>
             Copyright © 2026 <b>VR - VIDA RASA</b><br>
             Todos os direitos reservados.<br>
@@ -195,3 +195,4 @@ st.markdown(f"""
         </p>
     </div>
     """, unsafe_allow_html=True)
+
