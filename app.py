@@ -162,24 +162,19 @@ if logo_b64:
     ''', unsafe_allow_html=True)
 
 # 5.2 Listagem de Produtos (FILTRADA: apenas disponivel = 1)
-db = conectar_db()
-cursor = db.cursor()
-cursor.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel = 1 ORDER BY categoria, nome")
-todos_produtos = cursor.fetchall()
-
-menu = {}
-for p in todos_produtos:
-    cat = p[0]
-    if cat not in menu: menu[cat] = []
-    menu[cat].append(p)
-
-for cat, itens in menu.items():
-    st.markdown(f"<div style='color:white; text-transform:uppercase; letter-spacing:4px; font-weight:900; margin-top:30px; border-bottom: 2px solid #FF4B4B; padding-bottom:5px; margin-bottom:15px;'>{cat}</div>", unsafe_allow_html=True)
-    for p in itens:
-        img_b64 = carregar_imagem_base64(p[4])
-        img_html = f'<img src="data:image/png;base64,{img_b64}" style="max-width:100%; max-height:100%; object-fit: contain;">' if img_b64 else '🥃'
+for p in itens:
+        # Busca os dados da imagem já formatados pela função nova
+        full_img_data = carregar_imagem_base64(p[4])
+        
+        # Se a imagem existir, usa o HTML; se não, usa o emoji de copo
+        if full_img_data:
+            img_html = f'<img src="{full_img_data}" style="max-width:100%; max-height:100%; object-fit: contain;">'
+        else:
+            img_html = '🥃'
         
         preco_formatado = f"{p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+        # Mantenha o restante do st.markdown igual ao que você já tem...
 
         st.markdown(f"""
         <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 15px;">
@@ -197,5 +192,6 @@ st.markdown(f'''
         <p style="color:#555; font-size:0.75rem;">Copyright © 2026 <b>VR - VIDA RASA</b><br>Desenvolvido por Johnny Cardoso</p>
     </div>
 ''', unsafe_allow_html=True)
+
 
 
