@@ -36,11 +36,9 @@ inicializar_sistema()
 def carregar_imagem_base64(caminho):
     if not caminho:
         return None
-    
     diretorio_atual = os.path.dirname(os.path.abspath(__file__))
     nome_arquivo = os.path.basename(caminho)
     caminho_real = os.path.join(diretorio_atual, "img", nome_arquivo)
-    
     if os.path.exists(caminho_real):
         with open(caminho_real, "rb") as f:
             data = f.read()
@@ -52,16 +50,11 @@ def carregar_imagem_base64(caminho):
 with st.sidebar:
     st.title("⚙️ Gestão VR")
     senha = st.text_input("Senha Admin", type="password")
-    
     if senha == "@Hagatavr25#":
         st.success("Acesso Liberado")
-        
-        # Gestão de Categorias e Itens
-        st.divider()
         aba = st.radio("Ação:", ["Novo Produto", "Editar / Ocultar", "Excluir"])
         db = conectar_db()
         cursor = db.cursor()
-        
         cursor.execute("SELECT DISTINCT categoria FROM produtos ORDER BY categoria")
         categorias_existentes = [row[0] for row in cursor.fetchall()]
 
@@ -124,12 +117,10 @@ if logo_data:
         </div>
     ''', unsafe_allow_html=True)
 
-# Listagem de Produtos
 db = conectar_db()
 cursor = db.cursor()
 cursor.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel = 1 ORDER BY categoria, nome")
 todos = cursor.fetchall()
-
 menu = {}
 for p in todos:
     menu.setdefault(p[0], []).append(p)
@@ -140,11 +131,9 @@ for cat, itens in menu.items():
         img_data = carregar_imagem_base64(p[4])
         img_html = f'<img src="{img_data}" style="width: 100%; height: 100%; object-fit: contain;">' if img_data else '🥃'
         preco_formatado = f"{p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        nome_prod, desc_prod = p[1], (p[3] if p[3] else "")
         
-        nome_prod = p[1]
-        desc_prod = p[3] if p[3] else ""
-
-        # Lógica para mostrar descrição apenas se ela for diferente do nome (evita o "330ml 330ml")
+        # Mostra a descrição abaixo do nome apenas se for um texto novo (ex: sabor melancia)
         html_desc = f'<div style="color:#888; font-size:0.8rem; margin-top:2px;">{desc_prod}</div>' if desc_prod and desc_prod.lower() not in nome_prod.lower() else ""
 
         st.markdown(f"""
@@ -165,7 +154,6 @@ for cat, itens in menu.items():
         """, unsafe_allow_html=True)
 db.close()
 
-# Rodapé
 st.divider()
 st.markdown(f"""
     <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
