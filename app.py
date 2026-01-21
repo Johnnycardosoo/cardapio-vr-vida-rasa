@@ -52,6 +52,18 @@ with st.sidebar:
     senha = st.text_input("Senha Admin", type="password")
     if senha == "vr2026":
         st.success("Acesso Liberado")
+        
+        # BOTÃO DE BACKUP DO BANCO (Para você baixar e subir no GitHub)
+        if os.path.exists("cardapio_vr.db"):
+            with open("cardapio_vr.db", "rb") as f:
+                st.download_button(
+                    label="📥 Baixar Banco de Dados (Backup)",
+                    data=f,
+                    file_name="cardapio_vr.db",
+                    mime="application/octet-stream"
+                )
+        
+        st.divider()
         aba = st.radio("Ação:", ["Novo Produto", "Editar Produto", "Excluir"])
         db = conectar_db()
         cursor = db.cursor()
@@ -97,13 +109,15 @@ with st.sidebar:
 
         elif aba == "Excluir":
             st.subheader("🗑️ Remover")
-            t_ex = st.selectbox("Tipo", ["Produto", "Categoria"])
-            if t_ex == "Produto":
-                cursor.execute("SELECT id, nome FROM produtos")
+            t_ex = st.selectbox("Tipo", ["Um Produto", "Uma Categoria Inteira"])
+            if t_ex == "Um Produto":
+                cursor.execute("SELECT id, nome, categoria FROM produtos ORDER BY categoria")
                 itens = cursor.fetchall()
-                if itens and st.button("❌ EXCLUIR"):
-                    cursor.execute("DELETE FROM produtos WHERE id = ?", (st.selectbox("Item", itens, format_func=lambda x: x[1])[0],))
-                    db.commit(); st.rerun()
+                if itens:
+                    it_del = st.selectbox("Item", itens, format_func=lambda x: f"[{x[2]}] {x[1]}")
+                    if st.button("❌ EXCLUIR ITEM"):
+                        cursor.execute("DELETE FROM produtos WHERE id = ?", (it_del[0],))
+                        db.commit(); st.rerun()
             else:
                 if categorias_existentes:
                     c_ex = st.selectbox("Categoria", categorias_existentes)
@@ -112,7 +126,7 @@ with st.sidebar:
                         db.commit(); st.rerun()
         db.close()
 
-# --- 5. CORPO DO CARDÁPIO (A ORDEM IMPORTA AQUI) ---
+# --- 5. CORPO DO CARDÁPIO ---
 
 # 5.1 Cabeçalho
 if os.path.exists("vr_logo.png"):
@@ -120,13 +134,17 @@ if os.path.exists("vr_logo.png"):
     st.markdown(f'''
         <div style="text-align:center;">
             <img src="data:image/png;base64,{logo_b64}" width="180">
-            <p style="color:white; letter-spacing:5px; font-weight:200; margin-top:10px;">CARDÁPIO DIGITAL</p>
-            <p style="color:#888; font-size:0.8rem;">📍 Av. Vaticano, N° 4 - Anjo da Guarda<br>São Luís - MA</p>
-            <div style="display:inline-block; border:1px solid #FF4B4B; color:#FF4B4B; padding:2px 10px; border-radius:5px; font-size:0.6rem; font-weight:bold;">🔞 +18 ANOS</div>
+            <p style="color:white; letter-spacing:5px; font-weight:200; margin-top:10px; margin-bottom:5px;">CARDÁPIO DIGITAL</p>
+            <p style="color:#888; font-size:0.85rem; margin-bottom:5px; line-height:1.4;">
+                📍 Av. Vaticano, N° 4 - Anjo da Guarda<br>São Luís - MA, 65071-383
+            </p>
+            <div style="display:inline-block; border:1px solid #FF4B4B; color:#FF4B4B; padding:2px 12px; border-radius:5px; font-size:0.7rem; font-weight:bold; margin-top:5px;">
+                🔞 PROIBIDO PARA MENORES DE 18 ANOS
+            </div>
         </div>
     ''', unsafe_allow_html=True)
 
-# 5.2 Listagem de Produtos (Antes do Rodapé)
+# 5.2 Listagem de Produtos
 db = conectar_db()
 cursor = db.cursor()
 cursor.execute("SELECT DISTINCT categoria FROM produtos ORDER BY categoria")
@@ -137,21 +155,25 @@ for cat in categorias:
     cursor.execute("SELECT nome, preco, ml, img_path FROM produtos WHERE categoria = ?", (cat,))
     for p in cursor.fetchall():
         img_b64 = carregar_imagem_local(p[3])
-        img_html = f'<div style="width:60px; height:60px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.05); border-radius:8px; overflow:hidden;"><img src="data:image/png;base64,{img_b64}" style="max-width:100%; max-height:100%; object-fit:contain;"></div>' if img_b64 else '<div style="width:60px; height:60px; background:rgba(255,255,255,0.1); border-radius:8px; display:flex; align-items:center; justify-content:center;">🥃</div>'
+        # Container travado em 60x60px com object-fit contain para não cortar
+        if img_b64:
+            img_html = f'''<div style="width:60px; height:60px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden;"><img src="data:image/png;base64,{img_b64}" style="max-width:100%; max-height:100%; object-fit: contain;"></div>'''
+        else:
+            img_html = '<div style="width:60px; height:60px; background:rgba(255,255,255,0.1); border-radius:8px; display:flex; align-items:center; justify-content:center;">🥃</div>'
         
-        st.markdown(f'''
+        st.markdown(f"""
         <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 15px;">
             <div style="width: 60px; height: 60px; flex-shrink: 0;">{img_html}</div>
-            <div style="flex-grow: 1;"><span style="color:white; font-weight:bold; font-size:1rem;">{p[0]}</span><br><span style="color:#777; font-size:0.75rem;">{p[2]}</span></div>
-            <div style="color:#FF4B4B; font-weight:900; font-size:1rem; background:rgba(255,75,75,0.1); padding:8px; border-radius:8px;">R$ {p[1]:.2f}</div>
+            <div style="flex-grow: 1;"><span style="color:white; font-weight:bold; font-size:1.1rem;">{p[0]}</span><br><span style="color:#888; font-size:0.8rem;">{p[2]}</span></div>
+            <div style="color:#FF4B4B; font-weight:900; font-size:1.1rem; background:rgba(255,75,75,0.1); padding:8px; border-radius:8px; white-space: nowrap;">R$ {p[1]:.2f}</div>
         </div>
-        ''', unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 db.close()
 
-# 5.3 Rodapé (Sempre por último)
+# 5.3 Rodapé (Copyright)
 st.markdown(f'''
     <div style="text-align:center; margin-top:50px; padding-bottom:30px; border-top: 1px solid #222; padding-top:20px;">
         <p style="color:#FF4B4B; font-weight:bold; margin-bottom:5px;">www.cardapiovr.com.br</p>
-        <p style="color:#555; font-size:0.7rem;">Copyright © 2026 <b>VR - VIDA RASA</b><br>Desenvolvido por Johnny Cardoso</p>
+        <p style="color:#555; font-size:0.75rem;">Copyright © 2026 <b>VR - VIDA RASA</b><br>Todos os direitos reservados.<br>Desenvolvido por Johnny Cardoso</p>
     </div>
 ''', unsafe_allow_html=True)
