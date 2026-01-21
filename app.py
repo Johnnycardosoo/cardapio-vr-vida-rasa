@@ -53,7 +53,7 @@ with st.sidebar:
     st.title("⚙️ Gestão VR")
     senha = st.text_input("Senha Admin", type="password")
     
-    if senha == "vr2026":
+    if senha == "@Hagatavr25#":
         st.success("Acesso Liberado")
         
         if os.path.exists("cardapio_vr.db"):
@@ -191,3 +191,4 @@ st.markdown(f'''
         <p style="color:#555; font-size:0.75rem;">Copyright © 2026 <b>VR - VIDA RASA</b><br>Desenvolvido por Johnny Cardoso</p>
     </div>
 ''', unsafe_allow_html=True)
+
