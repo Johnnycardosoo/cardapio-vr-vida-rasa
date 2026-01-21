@@ -22,9 +22,18 @@ def inicializar_sistema():
     if not os.path.exists("img"):
         os.makedirs("img")
     conn = conectar_db()
+    # Adicionada a coluna 'disponivel' (1 = Visível, 0 = Oculto)
     conn.execute('''CREATE TABLE IF NOT EXISTS produtos 
                     (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                     categoria TEXT, nome TEXT, preco REAL, ml TEXT, img_path TEXT)''')
+                     categoria TEXT, nome TEXT, preco REAL, ml TEXT, img_path TEXT,
+                     disponivel INTEGER DEFAULT 1)''')
+    
+    # Tenta adicionar a coluna caso o banco já exista sem ela
+    try:
+        conn.execute("ALTER TABLE produtos ADD COLUMN disponivel INTEGER DEFAULT 1")
+    except:
+        pass
+        
     conn.commit()
     conn.close()
 
@@ -57,7 +66,7 @@ with st.sidebar:
                 )
         
         st.divider()
-        aba = st.radio("Ação:", ["Novo Produto", "Editar Produto", "Excluir"])
+        aba = st.radio("Ação:", ["Novo Produto", "Editar / Ocultar", "Excluir"])
         db = conectar_db()
         cursor = db.cursor()
         
@@ -77,26 +86,30 @@ with st.sidebar:
                     if cat_final and nome and arquivo:
                         caminho_img = os.path.join("img", arquivo.name)
                         with open(caminho_img, "wb") as f: f.write(arquivo.getbuffer())
-                        cursor.execute("INSERT INTO produtos (categoria, nome, preco, ml, img_path) VALUES (?,?,?,?,?)", (cat_final, nome, prec, desc, caminho_img))
+                        cursor.execute("INSERT INTO produtos (categoria, nome, preco, ml, img_path, disponivel) VALUES (?,?,?,?,?,1)", (cat_final, nome, prec, desc, caminho_img))
                         db.commit()
                         st.cache_data.clear()
                         st.rerun()
 
-        elif aba == "Editar Produto":
-            cursor.execute("SELECT id, nome, preco, ml, img_path, categoria FROM produtos")
+        elif aba == "Editar / Ocultar":
+            cursor.execute("SELECT id, nome, preco, ml, img_path, categoria, disponivel FROM produtos")
             todos = cursor.fetchall()
             if todos:
-                it_sel = st.selectbox("Selecione o produto", todos, format_func=lambda x: f"[{x[5]}] {x[1]}")
+                it_sel = st.selectbox("Selecione o produto", todos, format_func=lambda x: f"{'🟢' if x[6]==1 else '🔴'} [{x[5]}] {x[1]}")
                 with st.form("form_editar"):
                     n_nome = st.text_input("Nome", value=it_sel[1])
                     n_prec = st.number_input("Preço", value=float(it_sel[2]))
                     n_desc = st.text_input("ML", value=it_sel[3])
+                    # Opção de Ocultar/Mostrar
+                    n_disp = st.checkbox("Produto Disponível (Mostrar no Cardápio)", value=True if it_sel[6] == 1 else False)
                     n_foto = st.file_uploader("Trocar Foto", type=['png', 'jpg', 'jpeg'])
+                    
                     if st.form_submit_button("💾 SALVAR ALTERAÇÕES"):
                         cam_f = os.path.join("img", n_foto.name) if n_foto else it_sel[4]
+                        val_disp = 1 if n_disp else 0
                         if n_foto:
                             with open(cam_f, "wb") as f: f.write(n_foto.getbuffer())
-                        cursor.execute("UPDATE produtos SET nome=?, preco=?, ml=?, img_path=? WHERE id=?", (n_nome, n_prec, n_desc, cam_f, it_sel[0]))
+                        cursor.execute("UPDATE produtos SET nome=?, preco=?, ml=?, img_path=?, disponivel=? WHERE id=?", (n_nome, n_prec, n_desc, cam_f, val_disp, it_sel[0]))
                         db.commit()
                         st.cache_data.clear()
                         st.rerun()
@@ -108,20 +121,20 @@ with st.sidebar:
                 lista_p = cursor.fetchall()
                 if lista_p:
                     it = st.selectbox("Escolha o item", lista_p, format_func=lambda x: f"[{x[2]}] {x[1]}")
-                    if st.button("❌ EXCLUIR ITEM"):
+                    if st.button("❌ EXCLUIR ITEM PERMANENTEMENTE"):
                         cursor.execute("DELETE FROM produtos WHERE id = ?", (it[0],))
                         db.commit(); st.cache_data.clear(); st.rerun()
             else:
                 if categorias_existentes:
                     cat_ex = st.selectbox("Escolha a categoria", categorias_existentes)
-                    if st.button("🔥 EXCLUIR CATEGORIA"):
+                    if st.button("🔥 EXCLUIR CATEGORIA INTEIRA"):
                         cursor.execute("DELETE FROM produtos WHERE categoria = ?", (cat_ex,))
                         db.commit(); st.cache_data.clear(); st.rerun()
         db.close()
 
 # --- 5. CORPO DO CARDÁPIO ---
 
-# Fundo do bar (tenta carregar da raiz ou da pasta img)
+# Fundo do bar
 fundo_b64 = carregar_imagem_base64('fundo_bar.png') or carregar_imagem_base64('img/fundo_bar.png')
 if fundo_b64:
     st.markdown(f'''<style>.stApp {{ background-image: linear-gradient(rgba(0,0,0,0.88), rgba(0,0,0,0.88)), url("data:image/png;base64,{fundo_b64}"); background-size: cover; background-position: center; background-attachment: fixed; }} </style>''', unsafe_allow_html=True)
@@ -142,10 +155,10 @@ if logo_b64:
         </div>
     ''', unsafe_allow_html=True)
 
-# 5.2 Listagem de Produtos
+# 5.2 Listagem de Produtos (FILTRADA: apenas disponivel = 1)
 db = conectar_db()
 cursor = db.cursor()
-cursor.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos ORDER BY categoria, nome")
+cursor.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel = 1 ORDER BY categoria, nome")
 todos_produtos = cursor.fetchall()
 
 menu = {}
@@ -160,7 +173,6 @@ for cat, itens in menu.items():
         img_b64 = carregar_imagem_base64(p[4])
         img_html = f'<img src="data:image/png;base64,{img_b64}" style="max-width:100%; max-height:100%; object-fit: contain;">' if img_b64 else '🥃'
         
-        # AJUSTE DO PREÇO: formatando para usar vírgula (Ex: 25,00)
         preco_formatado = f"{p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
         st.markdown(f"""
