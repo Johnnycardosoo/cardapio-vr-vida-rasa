@@ -74,7 +74,6 @@ with st.sidebar:
             itens = cursor.fetchall()
             
             for item_id, nome_prod in itens:
-                # Correção específica baseada nos seus prints
                 if "red bull" in nome_prod.lower():
                     novo_path = "img/redbull250ml.png"
                     cursor.execute("UPDATE produtos SET img_path = ? WHERE id = ?", (novo_path, item_id))
@@ -155,9 +154,18 @@ if fundo_data:
 
 logo_data = carregar_imagem_base64("vr_logo.png") or carregar_imagem_base64("img/vr_logo.png")
 if logo_data:
-    st.markdown(f'<div style="text-align:center;"><img src="{logo_data}" width="180"></div>', unsafe_allow_html=True)
-
-st.markdown('<div style="text-align:center; color:white; letter-spacing:5px; font-weight:200; margin-top:10px;">CARDÁPIO DIGITAL</div>', unsafe_allow_html=True)
+    st.markdown(f'''
+        <div style="text-align:center;">
+            <img src="{logo_data}" width="180">
+            <p style="color:white; letter-spacing:5px; font-weight:200; margin-top:10px; margin-bottom:5px;">CARDÁPIO DIGITAL</p>
+            <p style="color:#888; font-size:0.85rem; margin-bottom:5px; line-height:1.4;">
+                📍 Av. Vaticano, N° 4 - Anjo da Guarda<br>São Luís - MA, 65071-383
+            </p>
+            <div style="display:inline-block; border:1px solid #FF4B4B; color:#FF4B4B; padding:2px 12px; border-radius:5px; font-size:0.7rem; font-weight:bold; margin-top:5px;">
+                🔞 PROIBIDO PARA MENORES DE 18 ANOS
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
 
 db = conectar_db()
 cursor = db.cursor()
@@ -195,4 +203,3 @@ st.markdown(f"""
         </p>
     </div>
     """, unsafe_allow_html=True)
-
