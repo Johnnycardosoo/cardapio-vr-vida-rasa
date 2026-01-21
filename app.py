@@ -37,6 +37,14 @@ def inicializar_sistema():
 
 inicializar_sistema()
 
+# BLOCO TEMPORÁRIO PARA CORREÇÃO
+conn = conectar_db()
+# Isso vai forçar todos os produtos "Red Bull" a usarem o arquivo correto que vimos no seu GitHub
+conn.execute("UPDATE produtos SET img_path = 'img/red_bull.png' WHERE nome LIKE '%Red Bull%'")
+conn.commit()
+conn.close()
+st.success("Caminhos de imagem corrigidos no banco!")
+
 # --- 3. FUNÇÕES DE SUPORTE (VERSÃO FINAL PARA GITHUB/NUVEM) ---
 @st.cache_data
 def carregar_imagem_base64(caminho):
@@ -211,5 +219,6 @@ st.markdown(f"""
         </p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
