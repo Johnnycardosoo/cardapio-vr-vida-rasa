@@ -101,13 +101,15 @@ for cat, itens in menu.items():
         nome_prod = str(p[1])
         desc_prod = str(p[3]) if p[3] else ""
         
-        # Lógica: Se a descrição (ex: 330ml) já estiver no nome, não mostra a linha de baixo
+        # --- CORREÇÃO DA DUPLICIDADE E DESCRIÇÃO ---
+        # Se a descrição (ex: 330ml) já estiver dentro do nome, não mostra nada embaixo.
+        # Se for diferente (ex: sabor melancia), mostra em cinza.
         if desc_prod and desc_prod.lower() not in nome_prod.lower():
             linha_desc = f'<div style="color:#888; font-size:0.8rem;">{desc_prod}</div>'
         else:
             linha_desc = ""
 
-        # HTML do CARD sem erros de aspas
+        # HTML do CARD sem erros de aspas ou vazamento de código
         card_html = f"""
         <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; margin-bottom:10px; display:flex; align-items:center; gap:12px;">
             <div style="width:50px; height:50px; background:rgba(255,255,255,0.02); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
