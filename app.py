@@ -182,11 +182,25 @@ for cat, itens in menu.items():
         img_data = carregar_imagem_base64(p[4])
         img_html = f'<img src="{img_data}" style="width: 100%; height: 100%; object-fit: contain;">' if img_data else '🥃'
         preco_formatado = f"{p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        
+        # --- Lógica: Nome e ML na mesma linha ---
+        exibir_nome = f"{p[1]} {p[3]}" if p[3] else p[1]
+
         st.markdown(f"""
-        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 15px;">
-            <div style="width: 60px; height: 60px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden;">{img_html}</div>
-            <div style="flex-grow: 1;"><span style="color:white; font-weight:bold; font-size:1.1rem;">{p[1]}</span><br><span style="color:#888; font-size:0.8rem;">{p[3]}</span></div>
-            <div style="color:#FF4B4B; font-weight:900; font-size:1.1rem; background:rgba(255,75,75,0.1); padding:8px; border-radius:8px;">R$ {preco_formatado}</div>
+        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <div style="width: 55px; height: 55px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden;">
+                {img_html}
+            </div>
+            
+            <div style="flex-grow: 1; min-width: 0; overflow: hidden;">
+                <div style="color:white; font-weight:bold; font-size:0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    {exibir_nome}
+                </div>
+            </div>
+            
+            <div style="color:#FF4B4B; font-weight:900; font-size:1rem; background:rgba(255,75,75,0.1); padding:8px 12px; border-radius:8px; white-space: nowrap; flex-shrink: 0; min-width: fit-content; text-align: center;">
+                R$ {preco_formatado}
+            </div>
         </div>
         """, unsafe_allow_html=True)
 db.close()
