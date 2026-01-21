@@ -189,9 +189,15 @@ for cat, itens in menu.items():
 db.close()
 
 # 5.3 Rodapé
-st.markdown(f'''
-    <div style="text-align:center; margin-top:50px; padding-bottom:30px; border-top: 1px solid #222; padding-top:20px;">
-        <p style="color:#FF4B4B; font-weight:bold; margin-bottom:5px;">www.cardapiovr.com.br</p>
-        <p style="color:#555; font-size:0.75rem;">Copyright © 2026 <b>VR - VIDA RASA</b><br>Desenvolvido por Johnny Cardoso</p>
+st.divider()
+st.markdown(f"""
+    <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
+        <p style='color: #FF4B4B; font-weight: bold; font-size: 1rem; margin-bottom: 10px;'>www.cardapiovr.com.br</p>
+        <p style='color: #888; font-size: 0.85rem; line-height: 1.6;'>
+            Copyright © 2026 <b>VR - VIDA RASA</b><br>
+            Todos os direitos reservados.<br>
+            <span style='font-size: 0.75rem; color: #555;'>Desenvolvido por <b>Johnny Cardoso</b></span>
+        </p>
     </div>
-''', unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+
