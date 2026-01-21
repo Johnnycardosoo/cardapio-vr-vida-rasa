@@ -53,7 +53,7 @@ def carregar_imagem_base64(caminho):
         with open(caminho_real, "rb") as f:
             data = f.read()
             encoded = base64.b64encode(data).decode()
-            return f"data:{mime};base64,{encoded}"
+            return f"data:image/png;base64,{encoded}"
     return None
 
 # --- 4. BARRA LATERAL (GESTÃO VR) ---
@@ -99,7 +99,7 @@ with st.sidebar:
             with st.form("form_novo", clear_on_submit=True):
                 nome = st.text_input("Nome do Produto")
                 prec = st.number_input("Preço", min_value=0.0)
-                desc = st.text_input("ML / Descrição")
+                desc = st.text_input("Descrição / ML (Ex: Sabor Melancia)")
                 arquivo = st.file_uploader("Foto", type=['png', 'jpg', 'jpeg'])
                 if st.form_submit_button("✅ SALVAR"):
                     if cat_final and nome and arquivo:
@@ -118,7 +118,7 @@ with st.sidebar:
                 with st.form("form_editar"):
                     n_nome = st.text_input("Nome", value=it_sel[1])
                     n_prec = st.number_input("Preço", value=float(it_sel[2]))
-                    n_desc = st.text_input("ML", value=it_sel[3])
+                    n_desc = st.text_input("Descrição / ML", value=it_sel[3])
                     n_disp = st.checkbox("Disponível", value=True if it_sel[6] == 1 else False)
                     n_foto = st.file_uploader("Trocar Foto", type=['png', 'jpg', 'jpeg'])
                     if st.form_submit_button("💾 SALVAR"):
@@ -176,19 +176,22 @@ for cat, itens in menu.items():
         img_html = f'<img src="{img_data}" style="width: 100%; height: 100%; object-fit: contain;">' if img_data else '🥃'
         preco_formatado = f"{p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         
-        # --- LÓGICA DE NÃO REPETIÇÃO ---
-        n_p, ml_p = p[1], (p[3] if p[3] else "")
-        exibir_texto = n_p if ml_p.lower() in n_p.lower() else f"{n_p} {ml_p}"
+        nome_prod = p[1]
+        desc_prod = p[3] if p[3] else ""
+
+        # Lógica: Se a descrição já está no nome, não mostra a descrição abaixo
+        html_desc = f'<div style="color:#888; font-size:0.75rem;">{desc_prod}</div>' if desc_prod and desc_prod.lower() not in nome_prod.lower() else ""
 
         st.markdown(f"""
-        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
             <div style="width: 52px; height: 52px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden;">
                 {img_html}
             </div>
             <div style="flex-grow: 1; min-width: 0; overflow: hidden;">
                 <div style="color:white; font-weight:bold; font-size:0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    {exibir_texto}
+                    {nome_prod}
                 </div>
+                {html_desc}
             </div>
             <div style="color:#FF4B4B; font-weight:900; font-size:1rem; background:rgba(255,75,75,0.1); padding:8px 10px; border-radius:8px; white-space: nowrap; flex-shrink: 0; min-width: fit-content; text-align: center;">
                 R$ {preco_formatado}
