@@ -46,21 +46,16 @@ def carregar_imagem_base64(caminho):
     diretorio_atual = os.path.dirname(os.path.abspath(__file__))
     nome_arquivo = os.path.basename(caminho)
     
-    # Tenta localizar o arquivo em 3 caminhos possíveis
-    tentativas = [
-        os.path.join(diretorio_atual, "img", nome_arquivo),
-        os.path.join(diretorio_atual, nome_arquivo),
-        caminho
-    ]
+    # Busca o arquivo real na pasta img do servidor
+    caminho_real = os.path.join(diretorio_atual, "img", nome_arquivo)
     
-    for real_path in tentativas:
-        if os.path.exists(real_path):
-            ext = real_path.split('.')[-1].lower()
-            mime = f"image/{ext if ext != 'jpg' else 'jpeg'}"
-            with open(real_path, "rb") as f:
-                data = f.read()
-                encoded = base64.b64encode(data).decode()
-                return f"data:{mime};base64,{encoded}"
+    if os.path.exists(caminho_real):
+        ext = caminho_real.split('.')[-1].lower()
+        mime = f"image/{ext if ext != 'jpg' else 'jpeg'}"
+        with open(caminho_real, "rb") as f:
+            data = f.read()
+            encoded = base64.b64encode(data).decode()
+            return f"data:{mime};base64,{encoded}"
     return None
 
 # --- 4. BARRA LATERAL (GESTÃO VR) ---
@@ -71,34 +66,31 @@ with st.sidebar:
     if senha == "@Hagatavr25#":
         st.success("Acesso Liberado")
         
-        # --- FUNÇÃO DE AUTO-CORREÇÃO ---
+        # --- BOTÃO DE AUTO-CORREÇÃO PERSONALIZADO ---
         if st.button("🔧 Corrigir Caminhos de Fotos"):
             db = conectar_db()
             cursor = db.cursor()
-            cursor.execute("SELECT id, img_path FROM produtos")
+            cursor.execute("SELECT id, nome FROM produtos")
             itens = cursor.fetchall()
-            corrigidos = 0
             
-            for item_id, path in itens:
-                nome_arq = os.path.basename(path)
-                novo_caminho = os.path.join("img", nome_arq)
-                cursor.execute("UPDATE produtos SET img_path = ? WHERE id = ?", (novo_caminho, item_id))
-                corrigidos += 1
+            for item_id, nome_prod in itens:
+                # Correção específica baseada nos seus prints
+                if "red bull" in nome_prod.lower():
+                    novo_path = "img/redbull250ml.png"
+                    cursor.execute("UPDATE produtos SET img_path = ? WHERE id = ?", (novo_path, item_id))
+                elif "baly" in nome_prod.lower():
+                    novo_path = "img/baly1L.png"
+                    cursor.execute("UPDATE produtos SET img_path = ? WHERE id = ?", (novo_path, item_id))
             
             db.commit()
             db.close()
             st.cache_data.clear()
-            st.success(f"Sucesso! {corrigidos} caminhos atualizados.")
+            st.success("Caminhos corrigidos com base nos arquivos do GitHub!")
             st.rerun()
         
         if os.path.exists("cardapio_vr.db"):
             with open("cardapio_vr.db", "rb") as f:
-                st.download_button(
-                    label="📥 Baixar Banco de Dados (Backup)",
-                    data=f,
-                    file_name="cardapio_vr.db",
-                    mime="application/octet-stream"
-                )
+                st.download_button(label="📥 Backup Banco", data=f, file_name="cardapio_vr.db")
         
         st.divider()
         aba = st.radio("Ação:", ["Novo Produto", "Editar / Ocultar", "Excluir"])
@@ -135,10 +127,9 @@ with st.sidebar:
                     n_nome = st.text_input("Nome", value=it_sel[1])
                     n_prec = st.number_input("Preço", value=float(it_sel[2]))
                     n_desc = st.text_input("ML", value=it_sel[3])
-                    n_disp = st.checkbox("Produto Disponível", value=True if it_sel[6] == 1 else False)
+                    n_disp = st.checkbox("Disponível", value=True if it_sel[6] == 1 else False)
                     n_foto = st.file_uploader("Trocar Foto", type=['png', 'jpg', 'jpeg'])
-                    
-                    if st.form_submit_button("💾 SALVAR ALTERAÇÕES"):
+                    if st.form_submit_button("💾 SALVAR"):
                         cam_f = os.path.join("img", n_foto.name) if n_foto else it_sel[4]
                         if n_foto:
                             with open(cam_f, "wb") as f: f.write(n_foto.getbuffer())
@@ -166,55 +157,32 @@ logo_data = carregar_imagem_base64("vr_logo.png") or carregar_imagem_base64("img
 if logo_data:
     st.markdown(f'<div style="text-align:center;"><img src="{logo_data}" width="180"></div>', unsafe_allow_html=True)
 
-st.markdown(f'''
-    <div style="text-align:center;">
-        <p style="color:white; letter-spacing:5px; font-weight:200; margin-top:10px; margin-bottom:5px;">CARDÁPIO DIGITAL</p>
-        <p style="color:#888; font-size:0.85rem; margin-bottom:5px; line-height:1.4;">
-            📍 Av. Vaticano, N° 4 - Anjo da Guarda<br>São Luís - MA, 65071-383
-        </p>
-        <div style="display:inline-block; border:1px solid #FF4B4B; color:#FF4B4B; padding:2px 12px; border-radius:5px; font-size:0.7rem; font-weight:bold; margin-top:5px;">
-            🔞 PROIBIDO PARA MENORES DE 18 ANOS
-        </div>
-    </div>
-''', unsafe_allow_html=True)
+st.markdown('<div style="text-align:center; color:white; letter-spacing:5px; font-weight:200; margin-top:10px;">CARDÁPIO DIGITAL</div>', unsafe_allow_html=True)
 
-# 5.2 Listagem de Produtos
 db = conectar_db()
 cursor = db.cursor()
 cursor.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel = 1 ORDER BY categoria, nome")
-todos_produtos = cursor.fetchall()
+todos = cursor.fetchall()
 
 menu = {}
-for p in todos_produtos:
-    cat = p[0]
-    if cat not in menu: menu[cat] = []
-    menu[cat].append(p)
+for p in todos:
+    menu.setdefault(p[0], []).append(p)
 
 for cat, itens in menu.items():
     st.markdown(f"<div style='color:white; text-transform:uppercase; letter-spacing:4px; font-weight:900; margin-top:30px; border-bottom: 2px solid #FF4B4B; padding-bottom:5px; margin-bottom:15px;'>{cat}</div>", unsafe_allow_html=True)
     for p in itens:
         img_data = carregar_imagem_base64(p[4])
-        img_html = f'<img src="{img_data}" style="max-width:100%; max-height:100%; object-fit: contain;">' if img_data else '🥃'
+        img_html = f'<img src="{img_data}" style="width: 100%; height: 100%; object-fit: contain;">' if img_data else '🥃'
         preco_formatado = f"{p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
         st.markdown(f"""
         <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 15px;">
             <div style="width: 60px; height: 60px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden;">{img_html}</div>
             <div style="flex-grow: 1;"><span style="color:white; font-weight:bold; font-size:1.1rem;">{p[1]}</span><br><span style="color:#888; font-size:0.8rem;">{p[3]}</span></div>
-            <div style="color:#FF4B4B; font-weight:900; font-size:1.1rem; background:rgba(255,75,75,0.1); padding:8px; border-radius:8px; white-space: nowrap;">R$ {preco_formatado}</div>
+            <div style="color:#FF4B4B; font-weight:900; font-size:1.1rem; background:rgba(255,75,75,0.1); padding:8px; border-radius:8px;">R$ {preco_formatado}</div>
         </div>
         """, unsafe_allow_html=True)
 db.close()
 
 # 5.3 Rodapé
 st.divider()
-st.markdown(f"""
-    <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
-        <p style='color: #FF4B4B; font-weight: bold; font-size: 1rem; margin-bottom: 10px;'>www.cardapiovr.com.br</p>
-        <p style='color: #888; font-size: 0.85rem; line-height: 1.6;'>
-            Copyright © 2026 <b>VR - VIDA RASA</b><br>
-            Todos os direitos reservados.<br>
-            <span style='font-size: 0.75rem; color: #555;'>Desenvolvido por <b>Johnny Cardoso</b></span>
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #888; padding-bottom: 40px;'>Copyright © 2026 <b>VR - VIDA RASA</b></div>", unsafe_allow_html=True)
