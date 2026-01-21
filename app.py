@@ -77,6 +77,7 @@ with st.sidebar:
             db.commit()
             db.close()
             st.cache_data.clear()
+            st.success("Caminhos corrigidos!")
             st.rerun()
         
         if os.path.exists("cardapio_vr.db"):
@@ -175,8 +176,9 @@ for cat, itens in menu.items():
         img_html = f'<img src="{img_data}" style="width: 100%; height: 100%; object-fit: contain;">' if img_data else '🥃'
         preco_formatado = f"{p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         
-        # AJUSTE: Nome e ML na mesma linha para evitar duplicidade
-        texto_final = f"{p[1]} {p[3]}" if p[3] else p[1]
+        # --- LÓGICA DE NÃO REPETIÇÃO ---
+        n_p, ml_p = p[1], (p[3] if p[3] else "")
+        exibir_texto = n_p if ml_p.lower() in n_p.lower() else f"{n_p} {ml_p}"
 
         st.markdown(f"""
         <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
@@ -185,7 +187,7 @@ for cat, itens in menu.items():
             </div>
             <div style="flex-grow: 1; min-width: 0; overflow: hidden;">
                 <div style="color:white; font-weight:bold; font-size:0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    {texto_final}
+                    {exibir_texto}
                 </div>
             </div>
             <div style="color:#FF4B4B; font-weight:900; font-size:1rem; background:rgba(255,75,75,0.1); padding:8px 10px; border-radius:8px; white-space: nowrap; flex-shrink: 0; min-width: fit-content; text-align: center;">
