@@ -66,11 +66,9 @@ with st.sidebar:
                         cursor.execute("INSERT INTO produtos (categoria, nome, preco, ml, img_path, disponivel) VALUES (?,?,?,?,?,1)", (cat, nome, prec, desc, caminho_img))
                         db.commit()
                         st.rerun()
-        # ... (Outras abas simplificadas para focar no erro visual)
         db.close()
 
 # --- 5. CORPO DO CARDÁPIO ---
-# Logo e Cabeçalho
 logo_img = carregar_imagem_base64("vr_logo.png")
 if logo_img:
     st.markdown(f'<div style="text-align:center;"><img src="{logo_img}" width="150"></div>', unsafe_allow_html=True)
@@ -98,26 +96,29 @@ for cat, itens in menu.items():
     for p in itens:
         img_b64 = carregar_imagem_base64(p[4])
         img_tag = f'<img src="{img_b64}" style="width:100%; height:100%; object-fit:contain;">' if img_b64 else '🥃'
-        preco = f"R$ {p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        preco_val = f"R$ {p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         
-        nome = p[1]
-        desc = p[3] if p[3] else ""
+        nome_prod = str(p[1])
+        desc_prod = str(p[3]) if p[3] else ""
         
-        # Lógica para evitar repetição e mostrar descrição em linha nova
-        linha_descricao = f'<div style="color:#888; font-size:0.8rem;">{desc}</div>' if desc and desc.lower() not in nome.lower() else ""
+        # Lógica: Se a descrição (ex: 330ml) já estiver no nome, não mostra a linha de baixo
+        if desc_prod and desc_prod.lower() not in nome_prod.lower():
+            linha_desc = f'<div style="color:#888; font-size:0.8rem;">{desc_prod}</div>'
+        else:
+            linha_desc = ""
 
-        # ESTRUTURA HTML LIMPA
+        # HTML do CARD sem erros de aspas
         card_html = f"""
         <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px; margin-bottom:10px; display:flex; align-items:center; gap:12px;">
             <div style="width:50px; height:50px; background:rgba(255,255,255,0.02); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 {img_tag}
             </div>
             <div style="flex-grow:1;">
-                <div style="color:white; font-weight:bold; font-size:0.95rem;">{nome}</div>
-                {linha_descricao}
+                <div style="color:white; font-weight:bold; font-size:0.95rem;">{nome_prod}</div>
+                {linha_desc}
             </div>
             <div style="color:#FF4B4B; font-weight:900; background:rgba(255,75,75,0.1); padding:8px 12px; border-radius:8px; white-space:nowrap;">
-                {preco}
+                {preco_val}
             </div>
         </div>
         """
@@ -125,5 +126,4 @@ for cat, itens in menu.items():
 
 db.close()
 
-# Rodapé
 st.markdown("<br><div style='text-align:center; color:#555; font-size:0.8rem;'>Johnny Cardoso © 2026</div>", unsafe_allow_html=True)
