@@ -37,20 +37,31 @@ def inicializar_sistema():
 
 inicializar_sistema()
 
-# --- 3. FUNÇÕES DE SUPORTE (CORRIGIDA PARA JPG/PNG) ---
+# --- 3. FUNÇÕES DE SUPORTE (VERSÃO FINAL PARA GITHUB/NUVEM) ---
 @st.cache_data
 def carregar_imagem_base64(caminho):
-    if caminho and os.path.exists(caminho):
-        # Detecta a extensão do arquivo para criar o cabeçalho correto
-        ext = caminho.split('.')[-1].lower()
-        if ext == 'jpg': ext = 'jpeg'
+    if not caminho:
+        return None
+    
+    # Pega o diretório atual onde o app.py está rodando
+    diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+    
+    # Limpa o caminho (remove 'img/' se já vier no nome para não duplicar)
+    nome_arquivo = os.path.basename(caminho)
+    caminho_real = os.path.join(diretorio_atual, "img", nome_arquivo)
+    
+    # Se não achar na pasta img, tenta o caminho direto
+    if not os.path.exists(caminho_real):
+        caminho_real = os.path.join(diretorio_atual, nome_arquivo)
+
+    if os.path.exists(caminho_real):
+        ext = caminho_real.split('.')[-1].lower()
+        mime = f"image/{ext if ext != 'jpg' else 'jpeg'}"
         
-        with open(caminho, "rb") as f:
+        with open(caminho_real, "rb") as f:
             data = f.read()
             encoded = base64.b64encode(data).decode()
-            # Retorna a string já formatada com o tipo de imagem dinâmico
-            return f"data:image/{ext};base64,{encoded}"
-    return None
+            return f"data:{mime};base64,{encoded}"
 
 # --- 4. BARRA LATERAL (GESTÃO VR) ---
 with st.sidebar:
@@ -200,4 +211,5 @@ st.markdown(f"""
         </p>
     </div>
     """, unsafe_allow_html=True)
+
 
