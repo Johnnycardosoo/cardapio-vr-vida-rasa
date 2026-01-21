@@ -26,12 +26,6 @@ def inicializar_sistema():
                     (id INTEGER PRIMARY KEY AUTOINCREMENT, 
                      categoria TEXT, nome TEXT, preco REAL, ml TEXT, img_path TEXT,
                      disponivel INTEGER DEFAULT 1)''')
-    
-    try:
-        conn.execute("ALTER TABLE produtos ADD COLUMN disponivel INTEGER DEFAULT 1")
-    except:
-        pass
-        
     conn.commit()
     conn.close()
 
@@ -48,8 +42,6 @@ def carregar_imagem_base64(caminho):
     caminho_real = os.path.join(diretorio_atual, "img", nome_arquivo)
     
     if os.path.exists(caminho_real):
-        ext = caminho_real.split('.')[-1].lower()
-        mime = f"image/{ext if ext != 'jpg' else 'jpeg'}"
         with open(caminho_real, "rb") as f:
             data = f.read()
             encoded = base64.b64encode(data).decode()
@@ -64,26 +56,7 @@ with st.sidebar:
     if senha == "@Hagatavr25#":
         st.success("Acesso Liberado")
         
-        if st.button("🔧 Corrigir Caminhos de Fotos"):
-            db = conectar_db()
-            cursor = db.cursor()
-            cursor.execute("SELECT id, nome FROM produtos")
-            itens = cursor.fetchall()
-            for item_id, nome_prod in itens:
-                if "red bull" in nome_prod.lower():
-                    cursor.execute("UPDATE produtos SET img_path = 'img/redbull250ml.png' WHERE id = ?", (item_id,))
-                elif "baly" in nome_prod.lower():
-                    cursor.execute("UPDATE produtos SET img_path = 'img/baly1L.png' WHERE id = ?", (item_id,))
-            db.commit()
-            db.close()
-            st.cache_data.clear()
-            st.success("Caminhos corrigidos!")
-            st.rerun()
-        
-        if os.path.exists("cardapio_vr.db"):
-            with open("cardapio_vr.db", "rb") as f:
-                st.download_button(label="📥 Backup Banco", data=f, file_name="cardapio_vr.db")
-        
+        # Gestão de Categorias e Itens
         st.divider()
         aba = st.radio("Ação:", ["Novo Produto", "Editar / Ocultar", "Excluir"])
         db = conectar_db()
@@ -99,7 +72,7 @@ with st.sidebar:
             with st.form("form_novo", clear_on_submit=True):
                 nome = st.text_input("Nome do Produto")
                 prec = st.number_input("Preço", min_value=0.0)
-                desc = st.text_input("Descrição / ML (Ex: Sabor Melancia)")
+                desc = st.text_input("Descrição / ML (Ex: sabor melancia)")
                 arquivo = st.file_uploader("Foto", type=['png', 'jpg', 'jpeg'])
                 if st.form_submit_button("✅ SALVAR"):
                     if cat_final and nome and arquivo:
@@ -112,9 +85,9 @@ with st.sidebar:
 
         elif aba == "Editar / Ocultar":
             cursor.execute("SELECT id, nome, preco, ml, img_path, categoria, disponivel FROM produtos")
-            todos = cursor.fetchall()
-            if todos:
-                it_sel = st.selectbox("Selecione o produto", todos, format_func=lambda x: f"{'🟢' if x[6]==1 else '🔴'} [{x[5]}] {x[1]}")
+            todos_itens = cursor.fetchall()
+            if todos_itens:
+                it_sel = st.selectbox("Selecione o produto", todos_itens, format_func=lambda x: f"{'🟢' if x[6]==1 else '🔴'} [{x[5]}] {x[1]}")
                 with st.form("form_editar"):
                     n_nome = st.text_input("Nome", value=it_sel[1])
                     n_prec = st.number_input("Preço", value=float(it_sel[2]))
@@ -129,15 +102,6 @@ with st.sidebar:
                         db.commit()
                         st.cache_data.clear()
                         st.rerun()
-
-        elif aba == "Excluir":
-            cursor.execute("SELECT id, nome, categoria FROM produtos ORDER BY categoria")
-            lista_p = cursor.fetchall()
-            if lista_p:
-                it = st.selectbox("Escolha o item", lista_p, format_func=lambda x: f"[{x[2]}] {x[1]}")
-                if st.button("❌ EXCLUIR ITEM"):
-                    cursor.execute("DELETE FROM produtos WHERE id = ?", (it[0],))
-                    db.commit(); st.cache_data.clear(); st.rerun()
         db.close()
 
 # --- 5. CORPO DO CARDÁPIO ---
@@ -160,6 +124,7 @@ if logo_data:
         </div>
     ''', unsafe_allow_html=True)
 
+# Listagem de Produtos
 db = conectar_db()
 cursor = db.cursor()
 cursor.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel = 1 ORDER BY categoria, nome")
@@ -179,8 +144,8 @@ for cat, itens in menu.items():
         nome_prod = p[1]
         desc_prod = p[3] if p[3] else ""
 
-        # Lógica: Se a descrição já está no nome, não mostra a descrição abaixo
-        html_desc = f'<div style="color:#888; font-size:0.75rem;">{desc_prod}</div>' if desc_prod and desc_prod.lower() not in nome_prod.lower() else ""
+        # Lógica para mostrar descrição apenas se ela for diferente do nome (evita o "330ml 330ml")
+        html_desc = f'<div style="color:#888; font-size:0.8rem; margin-top:2px;">{desc_prod}</div>' if desc_prod and desc_prod.lower() not in nome_prod.lower() else ""
 
         st.markdown(f"""
         <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
@@ -200,6 +165,7 @@ for cat, itens in menu.items():
         """, unsafe_allow_html=True)
 db.close()
 
+# Rodapé
 st.divider()
 st.markdown(f"""
     <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
