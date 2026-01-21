@@ -45,8 +45,6 @@ def carregar_imagem_base64(caminho):
     
     diretorio_atual = os.path.dirname(os.path.abspath(__file__))
     nome_arquivo = os.path.basename(caminho)
-    
-    # Busca o arquivo real na pasta img do servidor
     caminho_real = os.path.join(diretorio_atual, "img", nome_arquivo)
     
     if os.path.exists(caminho_real):
@@ -66,25 +64,19 @@ with st.sidebar:
     if senha == "@Hagatavr25#":
         st.success("Acesso Liberado")
         
-        # --- BOTÃO DE AUTO-CORREÇÃO PERSONALIZADO ---
         if st.button("🔧 Corrigir Caminhos de Fotos"):
             db = conectar_db()
             cursor = db.cursor()
             cursor.execute("SELECT id, nome FROM produtos")
             itens = cursor.fetchall()
-            
             for item_id, nome_prod in itens:
                 if "red bull" in nome_prod.lower():
-                    novo_path = "img/redbull250ml.png"
-                    cursor.execute("UPDATE produtos SET img_path = ? WHERE id = ?", (novo_path, item_id))
+                    cursor.execute("UPDATE produtos SET img_path = 'img/redbull250ml.png' WHERE id = ?", (item_id,))
                 elif "baly" in nome_prod.lower():
-                    novo_path = "img/baly1L.png"
-                    cursor.execute("UPDATE produtos SET img_path = ? WHERE id = ?", (novo_path, item_id))
-            
+                    cursor.execute("UPDATE produtos SET img_path = 'img/baly1L.png' WHERE id = ?", (item_id,))
             db.commit()
             db.close()
             st.cache_data.clear()
-            st.success("Caminhos corrigidos com base nos arquivos do GitHub!")
             st.rerun()
         
         if os.path.exists("cardapio_vr.db"):
@@ -183,29 +175,26 @@ for cat, itens in menu.items():
         img_html = f'<img src="{img_data}" style="width: 100%; height: 100%; object-fit: contain;">' if img_data else '🥃'
         preco_formatado = f"{p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         
-        # --- Lógica: Nome e ML na mesma linha ---
-        exibir_nome = f"{p[1]} {p[3]}" if p[3] else p[1]
+        # AJUSTE: Nome e ML na mesma linha para evitar duplicidade
+        texto_final = f"{p[1]} {p[3]}" if p[3] else p[1]
 
         st.markdown(f"""
         <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-            <div style="width: 55px; height: 55px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden;">
+            <div style="width: 52px; height: 52px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden;">
                 {img_html}
             </div>
-            
             <div style="flex-grow: 1; min-width: 0; overflow: hidden;">
                 <div style="color:white; font-weight:bold; font-size:0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    {exibir_nome}
+                    {texto_final}
                 </div>
             </div>
-            
-            <div style="color:#FF4B4B; font-weight:900; font-size:1rem; background:rgba(255,75,75,0.1); padding:8px 12px; border-radius:8px; white-space: nowrap; flex-shrink: 0; min-width: fit-content; text-align: center;">
+            <div style="color:#FF4B4B; font-weight:900; font-size:1rem; background:rgba(255,75,75,0.1); padding:8px 10px; border-radius:8px; white-space: nowrap; flex-shrink: 0; min-width: fit-content; text-align: center;">
                 R$ {preco_formatado}
             </div>
         </div>
         """, unsafe_allow_html=True)
 db.close()
 
-# 5.3 Rodapé
 st.divider()
 st.markdown(f"""
     <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
