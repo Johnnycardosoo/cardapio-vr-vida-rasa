@@ -39,13 +39,19 @@ def inicializar_sistema():
 
 inicializar_sistema()
 
-# --- 3. FUNÇÕES DE SUPORTE ---
+# --- 3. FUNÇÕES DE SUPORTE (VERSÃO CORRIGIDA) ---
 @st.cache_data
 def carregar_imagem_base64(caminho):
     if caminho and os.path.exists(caminho):
+        # Descobre a extensão real do arquivo (ex: jpg, png, jpeg)
+        ext = caminho.split('.')[-1].lower()
+        if ext == 'jpg': ext = 'jpeg'
+        
         with open(caminho, "rb") as f:
             data = f.read()
-        return base64.b64encode(data).decode()
+            encoded = base64.b64encode(data).decode()
+            # Já retorna a string montada com o tipo de imagem correto
+            return f"data:image/{ext};base64,{encoded}"
     return None
 
 # --- 4. BARRA LATERAL (GESTÃO VR) ---
@@ -191,4 +197,5 @@ st.markdown(f'''
         <p style="color:#555; font-size:0.75rem;">Copyright © 2026 <b>VR - VIDA RASA</b><br>Desenvolvido por Johnny Cardoso</p>
     </div>
 ''', unsafe_allow_html=True)
+
 
