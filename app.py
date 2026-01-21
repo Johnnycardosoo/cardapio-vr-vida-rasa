@@ -54,6 +54,7 @@ with st.sidebar:
     if senha == "@Hagatavr25#":
         st.success("Acesso Liberado")
         
+        # Função de Correção
         if st.button("🔧 Corrigir Caminhos de Fotos"):
             db = conectar_db()
             cursor = db.cursor()
@@ -69,6 +70,11 @@ with st.sidebar:
             st.cache_data.clear()
             st.success("Caminhos corrigidos!")
             st.rerun()
+
+        # --- FUNÇÃO RESTAURADA: BAIXAR BANCO DE DADOS ---
+        if os.path.exists("cardapio_vr.db"):
+            with open("cardapio_vr.db", "rb") as f:
+                st.download_button(label="📥 Baixar Banco de Dados (Backup)", data=f, file_name="cardapio_vr.db")
         
         st.divider()
         aba = st.radio("Ação:", ["Novo Produto", "Editar / Ocultar", "Excluir"])
@@ -93,14 +99,14 @@ with st.sidebar:
                         st.rerun()
         db.close()
 
-# --- 5. CORPO DO CARDÁPIO (ELEMENTOS VISUAIS RESTAURADOS) ---
+# --- 5. CORPO DO CARDÁPIO ---
 
-# 1. Fundo de Tela
+# Fundo de Tela
 fundo_data = carregar_imagem_base64('fundo_bar.png')
 if fundo_data:
     st.markdown(f'''<style>.stApp {{ background-image: linear-gradient(rgba(0,0,0,0.88), rgba(0,0,0,0.88)), url("{fundo_data}"); background-size: cover; background-position: center; background-attachment: fixed; }} </style>''', unsafe_allow_html=True)
 
-# 2. Logo, Endereço e Aviso
+# Logo, Endereço e Aviso
 logo_data = carregar_imagem_base64("vr_logo.png")
 if logo_data:
     st.markdown(f'''
@@ -151,7 +157,7 @@ for cat, itens in menu.items():
         """, unsafe_allow_html=True)
 db.close()
 
-# 3. Rodapé Completo
+# Rodapé
 st.divider()
 st.markdown(f"""
     <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
