@@ -86,8 +86,17 @@ with st.sidebar:
                     ep = st.number_input("Preço", value=float(sel[2]))
                     ed = st.text_input("Descrição Individual", value=sel[3])
                     edisp = st.checkbox("Disponível", value=True if sel[5]==1 else False)
+                    # Opção de imagem na edição adicionada aqui:
+                    novo_arq = st.file_uploader("Trocar Foto (Opcional)", type=['png', 'jpg', 'jpeg'])
+                    
                     if st.form_submit_button("💾 SALVAR"):
-                        cursor.execute("UPDATE produtos SET nome=?, preco=?, ml=?, disponivel=? WHERE id=?", (en, ep, ed, 1 if edisp else 0, sel[0]))
+                        caminho_final = sel[6]
+                        if novo_arq:
+                            caminho_final = os.path.join("img", novo_arq.name)
+                            with open(caminho_final, "wb") as f: f.write(novo_arq.getbuffer())
+                        
+                        cursor.execute("UPDATE produtos SET nome=?, preco=?, ml=?, disponivel=?, img_path=? WHERE id=?", 
+                                     (en, ep, ed, 1 if edisp else 0, caminho_final, sel[0]))
                         db.commit(); st.cache_data.clear(); st.rerun()
         
         elif aba == "Excluir":
@@ -137,7 +146,6 @@ for cat, itens in menu.items():
         img_b64 = carregar_imagem_base64(p[4])
         img_tag = f'<img src="{img_b64}" style="width:100%; height:100%; object-fit:contain;">' if img_b64 else '🥃'
         preco = f"R$ {p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        # Descrição Individualizada
         linha_desc = f'<div style="color:#888; font-size:0.8rem; margin-top:2px;">{p[3]}</div>' if p[3] else ""
 
         st.markdown(f"""
