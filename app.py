@@ -4,11 +4,12 @@ import os
 import base64
 
 # --- 1. CONFIGURAÇÃO DA PÁGINA ---
+# AJUSTADO: initial_sidebar_state="auto" permite que a setinha apareça em qualquer dispositivo
 st.set_page_config(
     page_title="VR - Cardápio Digital", 
     page_icon="🥃", 
     layout="centered",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="auto" 
 )
 
 def conectar_db():
@@ -62,7 +63,6 @@ with st.sidebar:
         db = conectar_db(); cursor = db.cursor()
         
         if aba == "Novo Produto":
-            # Categorias em ordem alfabética para facilitar a escolha
             cursor.execute("SELECT DISTINCT categoria FROM produtos ORDER BY categoria ASC")
             cats_existentes = [c[0] for c in cursor.fetchall()]
             
@@ -86,7 +86,6 @@ with st.sidebar:
                         db.commit(); st.cache_data.clear(); st.rerun()
 
         elif aba == "Editar / Ocultar":
-            # LISTAGEM EM ORDEM ALFABÉTICA NO GESTÃO VR (Nome do produto)
             cursor.execute("SELECT id, nome, preco, ml, categoria, disponivel, img_path FROM produtos ORDER BY nome ASC")
             itens = cursor.fetchall()
             if itens:
@@ -110,7 +109,6 @@ with st.sidebar:
                         db.commit(); st.cache_data.clear(); st.rerun()
         
         elif aba == "Excluir":
-            # LISTAGEM EM ORDEM ALFABÉTICA PARA EXCLUSÃO
             cursor.execute("SELECT id, nome FROM produtos ORDER BY nome ASC")
             p_del = cursor.fetchall()
             if p_del:
@@ -141,7 +139,6 @@ if logo:
         </div>
     ''', unsafe_allow_html=True)
 
-# LISTAGEM EM ORDEM ALFABÉTICA NO CARDÁPIO (Categoria e depois Nome)
 db = conectar_db(); cursor = db.cursor()
 cursor.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel=1 ORDER BY categoria ASC, nome ASC")
 prods = cursor.fetchall()
@@ -151,7 +148,7 @@ for p in prods:
     cat_nome = p[0].strip().upper() 
     menu.setdefault(cat_nome, []).append(p)
 
-for cat in sorted(menu.keys()): # Garante que os blocos de categoria também sigam ordem A-Z
+for cat in sorted(menu.keys()):
     itens = menu[cat]
     st.markdown(f"<div style='color:white; text-transform:uppercase; letter-spacing:4px; font-weight:900; margin-top:30px; border-bottom: 2px solid #FF4B4B; padding-bottom:5px; margin-bottom:15px;'>{cat}</div>", unsafe_allow_html=True)
     for p in itens:
