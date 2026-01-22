@@ -45,7 +45,6 @@ with st.sidebar:
     if senha == "@Hagatavr25#":
         st.success("Acesso Liberado")
         
-        # Backup e Correção
         if st.button("🔧 Corrigir Caminhos de Fotos"):
             db = conectar_db(); cursor = db.cursor()
             cursor.execute("SELECT id, nome FROM produtos")
@@ -63,12 +62,11 @@ with st.sidebar:
         db = conectar_db(); cursor = db.cursor()
         
         if aba == "Novo Produto":
-            # AJUSTE: Buscar categorias existentes para facilitar o cadastro
-            cursor.execute("SELECT DISTINCT categoria FROM produtos")
+            # Categorias em ordem alfabética para facilitar a escolha
+            cursor.execute("SELECT DISTINCT categoria FROM produtos ORDER BY categoria ASC")
             cats_existentes = [c[0] for c in cursor.fetchall()]
             
             with st.form("form_novo", clear_on_submit=True):
-                # Seletor de categoria para evitar erros de digitação
                 cat_choice = st.selectbox("Categoria Existente", ["NOVA CATEGORIA"] + cats_existentes)
                 if cat_choice == "NOVA CATEGORIA":
                     cat = st.text_input("Nome da Nova Categoria").upper().strip()
@@ -86,11 +84,10 @@ with st.sidebar:
                         with open(path, "wb") as f: f.write(arquivo.getbuffer())
                         cursor.execute("INSERT INTO produtos (categoria, nome, preco, ml, img_path, disponivel) VALUES (?,?,?,?,?,1)", (cat, nome, prec, desc_ind, path))
                         db.commit(); st.cache_data.clear(); st.rerun()
-                    else:
-                        st.error("Preencha todos os campos e envie uma foto.")
 
         elif aba == "Editar / Ocultar":
-            cursor.execute("SELECT id, nome, preco, ml, categoria, disponivel, img_path FROM produtos")
+            # LISTAGEM EM ORDEM ALFABÉTICA NO GESTÃO VR (Nome do produto)
+            cursor.execute("SELECT id, nome, preco, ml, categoria, disponivel, img_path FROM produtos ORDER BY nome ASC")
             itens = cursor.fetchall()
             if itens:
                 sel = st.selectbox("Produto", itens, format_func=lambda x: f"[{x[4]}] {x[1]}")
@@ -98,7 +95,7 @@ with st.sidebar:
                     en = st.text_input("Nome", value=sel[1])
                     ep = st.number_input("Preço", value=float(sel[2]))
                     ed = st.text_input("Descrição Individual", value=sel[3])
-                    ecat = st.text_input("Categoria", value=sel[4]).upper().strip() # Ajuste na categoria
+                    ecat = st.text_input("Categoria", value=sel[4]).upper().strip()
                     edisp = st.checkbox("Disponível", value=True if sel[5]==1 else False)
                     novo_arq = st.file_uploader("Trocar Foto (Opcional)", type=['png', 'jpg', 'jpeg'])
                     
@@ -113,7 +110,8 @@ with st.sidebar:
                         db.commit(); st.cache_data.clear(); st.rerun()
         
         elif aba == "Excluir":
-            cursor.execute("SELECT id, nome FROM produtos")
+            # LISTAGEM EM ORDEM ALFABÉTICA PARA EXCLUSÃO
+            cursor.execute("SELECT id, nome FROM produtos ORDER BY nome ASC")
             p_del = cursor.fetchall()
             if p_del:
                 s_del = st.selectbox("Apagar:", p_del, format_func=lambda x: x[1])
@@ -124,12 +122,10 @@ with st.sidebar:
 
 # --- 5. CORPO DO CARDÁPIO ---
 
-# Fundo
 fundo = carregar_imagem_base64('fundo_bar.png')
 if fundo:
     st.markdown(f'''<style>.stApp {{ background-image: linear-gradient(rgba(0,0,0,0.88), rgba(0,0,0,0.88)), url("{fundo}"); background-size: cover; background-position: center; background-attachment: fixed; }} </style>''', unsafe_allow_html=True)
 
-# Logo e Cabeçalho
 logo = carregar_imagem_base64("vr_logo.png")
 if logo:
     st.markdown(f'''
@@ -145,18 +141,18 @@ if logo:
         </div>
     ''', unsafe_allow_html=True)
 
-# Listagem (Ajustada para garantir que Categorias apareçam)
+# LISTAGEM EM ORDEM ALFABÉTICA NO CARDÁPIO (Categoria e depois Nome)
 db = conectar_db(); cursor = db.cursor()
-cursor.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel=1 ORDER BY categoria, nome")
+cursor.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel=1 ORDER BY categoria ASC, nome ASC")
 prods = cursor.fetchall()
 
 menu = {}
 for p in prods:
-    # .strip().upper() garante que "Combos" e "COMBOS" virem a mesma categoria
     cat_nome = p[0].strip().upper() 
     menu.setdefault(cat_nome, []).append(p)
 
-for cat, itens in menu.items():
+for cat in sorted(menu.keys()): # Garante que os blocos de categoria também sigam ordem A-Z
+    itens = menu[cat]
     st.markdown(f"<div style='color:white; text-transform:uppercase; letter-spacing:4px; font-weight:900; margin-top:30px; border-bottom: 2px solid #FF4B4B; padding-bottom:5px; margin-bottom:15px;'>{cat}</div>", unsafe_allow_html=True)
     for p in itens:
         img_b64 = carregar_imagem_base64(p[4])
@@ -176,7 +172,6 @@ for cat, itens in menu.items():
         """, unsafe_allow_html=True)
 db.close()
 
-# Rodapé
 st.divider()
 st.markdown(f"""
     <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
