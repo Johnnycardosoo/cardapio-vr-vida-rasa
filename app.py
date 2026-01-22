@@ -63,18 +63,31 @@ with st.sidebar:
         db = conectar_db(); cursor = db.cursor()
         
         if aba == "Novo Produto":
+            # AJUSTE: Buscar categorias existentes para facilitar o cadastro
+            cursor.execute("SELECT DISTINCT categoria FROM produtos")
+            cats_existentes = [c[0] for c in cursor.fetchall()]
+            
             with st.form("form_novo", clear_on_submit=True):
-                cat = st.text_input("Categoria").upper()
+                # Seletor de categoria para evitar erros de digitação
+                cat_choice = st.selectbox("Categoria Existente", ["NOVA CATEGORIA"] + cats_existentes)
+                if cat_choice == "NOVA CATEGORIA":
+                    cat = st.text_input("Nome da Nova Categoria").upper().strip()
+                else:
+                    cat = cat_choice
+                
                 nome = st.text_input("Nome do Produto")
                 prec = st.number_input("Preço", min_value=0.0)
                 desc_ind = st.text_input("Descrição Individual (Ex: Sabor Morango)")
                 arquivo = st.file_uploader("Foto", type=['png', 'jpg', 'jpeg'])
+                
                 if st.form_submit_button("✅ SALVAR"):
                     if cat and nome and arquivo:
                         path = os.path.join("img", arquivo.name)
                         with open(path, "wb") as f: f.write(arquivo.getbuffer())
                         cursor.execute("INSERT INTO produtos (categoria, nome, preco, ml, img_path, disponivel) VALUES (?,?,?,?,?,1)", (cat, nome, prec, desc_ind, path))
                         db.commit(); st.cache_data.clear(); st.rerun()
+                    else:
+                        st.error("Preencha todos os campos e envie uma foto.")
 
         elif aba == "Editar / Ocultar":
             cursor.execute("SELECT id, nome, preco, ml, categoria, disponivel, img_path FROM produtos")
@@ -85,8 +98,8 @@ with st.sidebar:
                     en = st.text_input("Nome", value=sel[1])
                     ep = st.number_input("Preço", value=float(sel[2]))
                     ed = st.text_input("Descrição Individual", value=sel[3])
+                    ecat = st.text_input("Categoria", value=sel[4]).upper().strip() # Ajuste na categoria
                     edisp = st.checkbox("Disponível", value=True if sel[5]==1 else False)
-                    # Opção de imagem na edição adicionada aqui:
                     novo_arq = st.file_uploader("Trocar Foto (Opcional)", type=['png', 'jpg', 'jpeg'])
                     
                     if st.form_submit_button("💾 SALVAR"):
@@ -95,8 +108,8 @@ with st.sidebar:
                             caminho_final = os.path.join("img", novo_arq.name)
                             with open(caminho_final, "wb") as f: f.write(novo_arq.getbuffer())
                         
-                        cursor.execute("UPDATE produtos SET nome=?, preco=?, ml=?, disponivel=?, img_path=? WHERE id=?", 
-                                     (en, ep, ed, 1 if edisp else 0, caminho_final, sel[0]))
+                        cursor.execute("UPDATE produtos SET nome=?, preco=?, ml=?, categoria=?, disponivel=?, img_path=? WHERE id=?", 
+                                     (en, ep, ed, ecat, 1 if edisp else 0, caminho_final, sel[0]))
                         db.commit(); st.cache_data.clear(); st.rerun()
         
         elif aba == "Excluir":
@@ -109,14 +122,14 @@ with st.sidebar:
                     db.commit(); st.cache_data.clear(); st.rerun()
         db.close()
 
-# --- 5. CORPO DO CARDÁPIO (DESIGN ORIGINAL RESTAURADO) ---
+# --- 5. CORPO DO CARDÁPIO ---
 
 # Fundo
 fundo = carregar_imagem_base64('fundo_bar.png')
 if fundo:
     st.markdown(f'''<style>.stApp {{ background-image: linear-gradient(rgba(0,0,0,0.88), rgba(0,0,0,0.88)), url("{fundo}"); background-size: cover; background-position: center; background-attachment: fixed; }} </style>''', unsafe_allow_html=True)
 
-# Logo e Cabeçalho Completo (Restaurado)
+# Logo e Cabeçalho
 logo = carregar_imagem_base64("vr_logo.png")
 if logo:
     st.markdown(f'''
@@ -132,13 +145,16 @@ if logo:
         </div>
     ''', unsafe_allow_html=True)
 
-# Listagem
+# Listagem (Ajustada para garantir que Categorias apareçam)
 db = conectar_db(); cursor = db.cursor()
 cursor.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel=1 ORDER BY categoria, nome")
 prods = cursor.fetchall()
 
 menu = {}
-for p in prods: menu.setdefault(p[0], []).append(p)
+for p in prods:
+    # .strip().upper() garante que "Combos" e "COMBOS" virem a mesma categoria
+    cat_nome = p[0].strip().upper() 
+    menu.setdefault(cat_nome, []).append(p)
 
 for cat, itens in menu.items():
     st.markdown(f"<div style='color:white; text-transform:uppercase; letter-spacing:4px; font-weight:900; margin-top:30px; border-bottom: 2px solid #FF4B4B; padding-bottom:5px; margin-bottom:15px;'>{cat}</div>", unsafe_allow_html=True)
@@ -160,7 +176,7 @@ for cat, itens in menu.items():
         """, unsafe_allow_html=True)
 db.close()
 
-# Rodapé Completo (Restaurado)
+# Rodapé
 st.divider()
 st.markdown(f"""
     <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
