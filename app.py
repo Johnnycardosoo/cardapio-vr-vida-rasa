@@ -11,13 +11,17 @@ st.set_page_config(
     initial_sidebar_state="auto" 
 )
 
+# 🔒 SENHA ADMIN VIA VARIÁVEL DE AMBIENTE (NOVA LINHA)
+ADMIN_PASS = os.getenv("ADMIN_PASS")
+
 def conectar_db():
     conn = sqlite3.connect('cardapio_vr.db', check_same_thread=False, timeout=10)
     conn.execute("PRAGMA journal_mode=WAL;")
     return conn
 
 def inicializar_sistema():
-    if not os.path.exists("img"): os.makedirs("img")
+    if not os.path.exists("img"): 
+        os.makedirs("img")
     conn = conectar_db()
     conn.execute('''CREATE TABLE IF NOT EXISTS produtos 
                     (id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -30,11 +34,10 @@ inicializar_sistema()
 
 @st.cache_data(show_spinner=False)
 def carregar_imagem_base64(caminho):
-    if not caminho: return None
-    # Garante que o caminho seja tratado corretamente independente de como foi salvo
+    if not caminho: 
+        return None
     nome_arquivo = os.path.basename(caminho)
     caminho_real = os.path.join("img", nome_arquivo)
-    
     if os.path.exists(caminho_real):
         try:
             with open(caminho_real, "rb") as f:
@@ -47,16 +50,22 @@ def carregar_imagem_base64(caminho):
 with st.sidebar:
     st.title("⚙️ Gestão VR")
     senha = st.text_input("Senha Admin", type="password")
-    if senha == "@Hagatavr25#":
+
+    # 🔒 VERIFICAÇÃO SEGURA (SUBSTITUIU A SENHA HARDCODED)
+    if ADMIN_PASS and senha == ADMIN_PASS:
         st.success("Acesso Liberado")
         
         if st.button("🔧 Corrigir Caminhos de Fotos"):
             db = conectar_db(); cursor = db.cursor()
             cursor.execute("SELECT id, nome FROM produtos")
             for i, n in cursor.fetchall():
-                if "red bull" in n.lower(): cursor.execute("UPDATE produtos SET img_path='img/redbull250ml.png' WHERE id=?", (i,))
-                elif "baly" in n.lower(): cursor.execute("UPDATE produtos SET img_path='img/baly1L.png' WHERE id=?", (i,))
-            db.commit(); db.close(); st.cache_data.clear(); st.rerun()
+                if "red bull" in n.lower():
+                    cursor.execute("UPDATE produtos SET img_path='img/redbull250ml.png' WHERE id=?", (i,))
+                elif "baly" in n.lower():
+                    cursor.execute("UPDATE produtos SET img_path='img/baly1L.png' WHERE id=?", (i,))
+            db.commit(); db.close()
+            st.cache_data.clear()
+            st.rerun()
 
         if os.path.exists("cardapio_vr.db"):
             with open("cardapio_vr.db", "rb") as f:
@@ -89,11 +98,12 @@ with st.sidebar:
                         with open(path, "wb") as f: 
                             f.write(arquivo.getbuffer())
                         
-                        # Conexão exclusiva para o salvamento
                         db_save = conectar_db()
                         cursor_save = db_save.cursor()
-                        cursor_save.execute("INSERT INTO produtos (categoria, nome, preco, ml, img_path, disponivel) VALUES (?,?,?,?,?,1)", 
-                                           (cat, nome, prec, desc_ind, path))
+                        cursor_save.execute(
+                            "INSERT INTO produtos (categoria, nome, preco, ml, img_path, disponivel) VALUES (?,?,?,?,?,1)", 
+                            (cat, nome, prec, desc_ind, path)
+                        )
                         db_save.commit()
                         db_save.close()
                         
@@ -102,7 +112,9 @@ with st.sidebar:
 
         elif aba == "Editar / Ocultar":
             db = conectar_db(); cursor = db.cursor()
-            cursor.execute("SELECT id, nome, preco, ml, categoria, disponivel, img_path FROM produtos ORDER BY nome ASC")
+            cursor.execute(
+                "SELECT id, nome, preco, ml, categoria, disponivel, img_path FROM produtos ORDER BY nome ASC"
+            )
             itens = cursor.fetchall()
             db.close()
             
@@ -120,12 +132,15 @@ with st.sidebar:
                         caminho_final = sel[6]
                         if novo_arq:
                             caminho_final = os.path.join("img", novo_arq.name)
-                            with open(caminho_final, "wb") as f: f.write(novo_arq.getbuffer())
+                            with open(caminho_final, "wb") as f: 
+                                f.write(novo_arq.getbuffer())
                         
                         db_upd = conectar_db()
                         cursor_upd = db_upd.cursor()
-                        cursor_upd.execute("UPDATE produtos SET nome=?, preco=?, ml=?, categoria=?, disponivel=?, img_path=? WHERE id=?", 
-                                         (en, ep, ed, ecat, 1 if edisp else 0, caminho_final, sel[0]))
+                        cursor_upd.execute(
+                            "UPDATE produtos SET nome=?, preco=?, ml=?, categoria=?, disponivel=?, img_path=? WHERE id=?", 
+                            (en, ep, ed, ecat, 1 if edisp else 0, caminho_final, sel[0])
+                        )
                         db_upd.commit()
                         db_upd.close()
                         st.cache_data.clear()
@@ -151,7 +166,16 @@ with st.sidebar:
 # --- 5. CORPO DO CARDÁPIO ---
 fundo = carregar_imagem_base64('fundo_bar.png')
 if fundo:
-    st.markdown(f'''<style>.stApp {{ background-image: linear-gradient(rgba(0,0,0,0.88), rgba(0,0,0,0.88)), url("{fundo}"); background-size: cover; background-position: center; background-attachment: fixed; }} </style>''', unsafe_allow_html=True)
+    st.markdown(f'''
+        <style>
+        .stApp {{
+            background-image: linear-gradient(rgba(0,0,0,0.88), rgba(0,0,0,0.88)), url("{fundo}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }}
+        </style>
+    ''', unsafe_allow_html=True)
 
 logo = carregar_imagem_base64("vr_logo.png")
 if logo:
@@ -168,10 +192,11 @@ if logo:
         </div>
     ''', unsafe_allow_html=True)
 
-# Listagem de Produtos
 db_view = conectar_db()
 cursor_view = db_view.cursor()
-cursor_view.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel=1 ORDER BY categoria ASC, nome ASC")
+cursor_view.execute(
+    "SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel=1 ORDER BY categoria ASC, nome ASC"
+)
 prods = cursor_view.fetchall()
 db_view.close()
 
@@ -181,9 +206,11 @@ for p in prods:
     menu.setdefault(cat_nome, []).append(p)
 
 for cat in sorted(menu.keys()):
-    itens = menu[cat]
-    st.markdown(f"<div style='color:white; text-transform:uppercase; letter-spacing:4px; font-weight:900; margin-top:30px; border-bottom: 2px solid #FF4B4B; padding-bottom:5px; margin-bottom:15px;'>{cat}</div>", unsafe_allow_html=True)
-    for p in itens:
+    st.markdown(
+        f"<div style='color:white; text-transform:uppercase; letter-spacing:4px; font-weight:900; margin-top:30px; border-bottom:2px solid #FF4B4B; padding-bottom:5px; margin-bottom:15px;'>{cat}</div>",
+        unsafe_allow_html=True
+    )
+    for p in menu[cat]:
         img_b64 = carregar_imagem_base64(p[4])
         img_tag = f'<img src="{img_b64}" style="width:100%; height:100%; object-fit:contain;">' if img_b64 else '🥃'
         preco = f"R$ {p[2]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -201,13 +228,13 @@ for cat in sorted(menu.keys()):
         """, unsafe_allow_html=True)
 
 st.divider()
-st.markdown(f"""
-    <div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
-        <p style='color: #FF4B4B; font-weight: bold; font-size: 1rem; margin-bottom: 10px;'>cardapiovr.com.br</p>
-        <p style='color: #888; font-size: 0.85rem; line-height: 1.6;'>
-            Copyright © 2026 <b>VR - VIDA RASA</b><br>
-            Todos os direitos reservados.<br>
-            <span style='font-size: 0.75rem; color: #555;'>Desenvolvido por <b>Johnny Cardoso</b></span>
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown("""
+<div style='text-align: center; padding-bottom: 40px; padding-top: 10px;'>
+    <p style='color: #FF4B4B; font-weight: bold; font-size: 1rem; margin-bottom: 10px;'>cardapiovr.com.br</p>
+    <p style='color: #888; font-size: 0.85rem; line-height: 1.6;'>
+        Copyright © 2026 <b>VR - VIDA RASA</b><br>
+        Todos os direitos reservados.<br>
+        <span style='font-size: 0.75rem; color: #555;'>Desenvolvido por <b>Johnny Cardoso</b></span>
+    </p>
+</div>
+""", unsafe_allow_html=True)
