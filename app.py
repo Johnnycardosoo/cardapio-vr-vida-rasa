@@ -4,7 +4,6 @@ import os
 import base64
 
 # --- 1. CONFIGURAÇÃO DA PÁGINA ---
-# AJUSTADO: initial_sidebar_state="auto" permite que a setinha apareça em qualquer dispositivo
 st.set_page_config(
     page_title="VR - Cardápio Digital", 
     page_icon="🥃", 
@@ -29,14 +28,19 @@ def inicializar_sistema():
 
 inicializar_sistema()
 
-@st.cache_data
+@st.cache_data(show_spinner=False)
 def carregar_imagem_base64(caminho):
     if not caminho: return None
+    # Garante que o caminho seja tratado corretamente independente de como foi salvo
     nome_arquivo = os.path.basename(caminho)
     caminho_real = os.path.join("img", nome_arquivo)
+    
     if os.path.exists(caminho_real):
-        with open(caminho_real, "rb") as f:
-            return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+        try:
+            with open(caminho_real, "rb") as f:
+                return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+        except Exception:
+            return None
     return None
 
 # --- 4. BARRA LATERAL (GESTÃO VR) ---
@@ -60,11 +64,12 @@ with st.sidebar:
 
         st.divider()
         aba = st.radio("Ação:", ["Novo Produto", "Editar / Ocultar", "Excluir"])
-        db = conectar_db(); cursor = db.cursor()
         
         if aba == "Novo Produto":
+            db = conectar_db(); cursor = db.cursor()
             cursor.execute("SELECT DISTINCT categoria FROM produtos ORDER BY categoria ASC")
             cats_existentes = [c[0] for c in cursor.fetchall()]
+            db.close()
             
             with st.form("form_novo", clear_on_submit=True):
                 cat_choice = st.selectbox("Categoria Existente", ["NOVA CATEGORIA"] + cats_existentes)
@@ -81,13 +86,26 @@ with st.sidebar:
                 if st.form_submit_button("✅ SALVAR"):
                     if cat and nome and arquivo:
                         path = os.path.join("img", arquivo.name)
-                        with open(path, "wb") as f: f.write(arquivo.getbuffer())
-                        cursor.execute("INSERT INTO produtos (categoria, nome, preco, ml, img_path, disponivel) VALUES (?,?,?,?,?,1)", (cat, nome, prec, desc_ind, path))
-                        db.commit(); st.cache_data.clear(); st.rerun()
+                        with open(path, "wb") as f: 
+                            f.write(arquivo.getbuffer())
+                        
+                        # Conexão exclusiva para o salvamento
+                        db_save = conectar_db()
+                        cursor_save = db_save.cursor()
+                        cursor_save.execute("INSERT INTO produtos (categoria, nome, preco, ml, img_path, disponivel) VALUES (?,?,?,?,?,1)", 
+                                           (cat, nome, prec, desc_ind, path))
+                        db_save.commit()
+                        db_save.close()
+                        
+                        st.cache_data.clear()
+                        st.rerun()
 
         elif aba == "Editar / Ocultar":
+            db = conectar_db(); cursor = db.cursor()
             cursor.execute("SELECT id, nome, preco, ml, categoria, disponivel, img_path FROM produtos ORDER BY nome ASC")
             itens = cursor.fetchall()
+            db.close()
+            
             if itens:
                 sel = st.selectbox("Produto", itens, format_func=lambda x: f"[{x[4]}] {x[1]}")
                 with st.form("edit_f"):
@@ -104,22 +122,33 @@ with st.sidebar:
                             caminho_final = os.path.join("img", novo_arq.name)
                             with open(caminho_final, "wb") as f: f.write(novo_arq.getbuffer())
                         
-                        cursor.execute("UPDATE produtos SET nome=?, preco=?, ml=?, categoria=?, disponivel=?, img_path=? WHERE id=?", 
-                                     (en, ep, ed, ecat, 1 if edisp else 0, caminho_final, sel[0]))
-                        db.commit(); st.cache_data.clear(); st.rerun()
+                        db_upd = conectar_db()
+                        cursor_upd = db_upd.cursor()
+                        cursor_upd.execute("UPDATE produtos SET nome=?, preco=?, ml=?, categoria=?, disponivel=?, img_path=? WHERE id=?", 
+                                         (en, ep, ed, ecat, 1 if edisp else 0, caminho_final, sel[0]))
+                        db_upd.commit()
+                        db_upd.close()
+                        st.cache_data.clear()
+                        st.rerun()
         
         elif aba == "Excluir":
+            db = conectar_db(); cursor = db.cursor()
             cursor.execute("SELECT id, nome FROM produtos ORDER BY nome ASC")
             p_del = cursor.fetchall()
+            db.close()
+            
             if p_del:
                 s_del = st.selectbox("Apagar:", p_del, format_func=lambda x: x[1])
                 if st.button("🚨 EXCLUIR"):
-                    cursor.execute("DELETE FROM produtos WHERE id=?", (s_del[0],))
-                    db.commit(); st.cache_data.clear(); st.rerun()
-        db.close()
+                    db_del = conectar_db()
+                    cursor_del = db_del.cursor()
+                    cursor_del.execute("DELETE FROM produtos WHERE id=?", (s_del[0],))
+                    db_del.commit()
+                    db_del.close()
+                    st.cache_data.clear()
+                    st.rerun()
 
 # --- 5. CORPO DO CARDÁPIO ---
-
 fundo = carregar_imagem_base64('fundo_bar.png')
 if fundo:
     st.markdown(f'''<style>.stApp {{ background-image: linear-gradient(rgba(0,0,0,0.88), rgba(0,0,0,0.88)), url("{fundo}"); background-size: cover; background-position: center; background-attachment: fixed; }} </style>''', unsafe_allow_html=True)
@@ -139,9 +168,12 @@ if logo:
         </div>
     ''', unsafe_allow_html=True)
 
-db = conectar_db(); cursor = db.cursor()
-cursor.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel=1 ORDER BY categoria ASC, nome ASC")
-prods = cursor.fetchall()
+# Listagem de Produtos
+db_view = conectar_db()
+cursor_view = db_view.cursor()
+cursor_view.execute("SELECT categoria, nome, preco, ml, img_path FROM produtos WHERE disponivel=1 ORDER BY categoria ASC, nome ASC")
+prods = cursor_view.fetchall()
+db_view.close()
 
 menu = {}
 for p in prods:
@@ -167,7 +199,6 @@ for cat in sorted(menu.keys()):
             <div style="color:#FF4B4B; font-weight:900; font-size:1rem; background:rgba(255,75,75,0.1); padding:8px 10px; border-radius:8px; white-space:nowrap;">{preco}</div>
         </div>
         """, unsafe_allow_html=True)
-db.close()
 
 st.divider()
 st.markdown(f"""
